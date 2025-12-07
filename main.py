@@ -158,6 +158,74 @@ def create_distance_heatmap(source, distances):
   
    return heatmap_pcd
 
+def detect_missing_regions(source, target, distances, distance_threshold=0.1, region_size_threshold=10):
+   """
+   Detect regions in source that have no correspondence in target using distance thresholding and region growing
+   """
+   source_points = np.asarray(source.points)
+  
+   # Find points that are far from any point in the target (potentially missing)
+   missing_indices = np.where(distances > distance_threshold)[0]
+  
+   if len(missing_indices) == 0:
+       print("No significant differences detected")
+       return [], [], []
+  
+   # Create a KDTree of the source points
+   source_tree = KDTree(source_points)
+  
+   # Initialize variables for region growing
+   all_regions = []
+   processed = np.zeros(len(source_points), dtype=bool)
+  
+   # Process each unprocessed missing point
+   for idx in missing_indices:
+       if processed[idx]:
+           continue
+          
+       # Start a new region with this point
+       current_region = [idx]
+       processed[idx] = True
+      
+       # Grow the region
+       i = 0
+       while i < len(current_region):
+           # Get current point in the growing region
+           current_idx = current_region[i]
+          
+           # Find neighbors within the 3D neighborhood (using KDTree)
+           neighbors_dist, neighbors_idx = source_tree.query(
+               source_points[current_idx].reshape(1, -1),
+               k=20  # Consider 20 nearest neighbors
+           )
+          
+           # Add unprocessed neighbors that are also missing
+           for neighbor_idx in neighbors_idx[0][1:]:  # Skip the point itself
+               if not processed[neighbor_idx] and neighbor_idx in missing_indices:
+                   current_region.append(neighbor_idx)
+                   processed[neighbor_idx] = True
+          
+           i += 1
+      
+       # Store region if it's large enough (to filter out noise)
+       if len(current_region) >= region_size_threshold:
+           all_regions.append(current_region)
+  
+   # Flatten all regions into a single list of indices
+   all_missing_indices = []
+   region_labels = np.zeros(len(source_points), dtype=int)
+  
+   for region_idx, region in enumerate(all_regions, 1):
+       all_missing_indices.extend(region)
+       # Label each point with its region number
+       for point_idx in region:
+           region_labels[point_idx] = region_idx
+  
+   print(f"Detected {len(all_regions)} missing regions with total {len(all_missing_indices)} points")
+  
+   # Return missing regions, all missing indices, and region labels
+   return all_regions, np.array(all_missing_indices), region_labels
+
 
 if __name__ == "__main__":
     RED_COLOR = [1,0,0]
@@ -177,15 +245,27 @@ if __name__ == "__main__":
     source_pcd = preprocess_point_cloud(load_point_cloud(ORIGINAL if IS_SCAN_EQUAL else MODIFIED), voxel_size=0.1)
     source_aligned, _ = register_point_clouds(source_pcd, target_pcd, VOXELS_SIZE)
 
-    target_pcd.paint_uniform_color(RED_COLOR)
+    target_pcd.paint_uniform_color(GREEN_COLOR)
     source_pcd.paint_uniform_color(BLUE_COLOR)
     source_aligned.paint_uniform_color(GREEN_COLOR)
 
     distances = compute_cloud_distances(source_aligned, target_pcd)
     analyze_changes(distances, threshold=0.2)
 
-    heatmap_pcd = create_distance_heatmap(source_aligned, distances)
-    o3d.visualization.draw_geometries([heatmap_pcd])
+    # heatmap_pcd = create_distance_heatmap(source_aligned, distances)
+    # o3d.visualization.draw_geometries([heatmap_pcd])
+
+    regions, missing_indices, region_labels = detect_missing_regions(source_aligned, target_pcd, distances, distance_threshold=0.9)
+
+    # Create visualization with missing regions highlighted
+    missing_pcd = o3d.geometry.PointCloud()
+    if len(missing_indices) > 0:
+        missing_points = np.asarray(source_aligned.points)[missing_indices]
+        missing_pcd.points = o3d.utility.Vector3dVector(missing_points)
+        missing_pcd.paint_uniform_color(RED_COLOR)  # Yellow for missing regions
+
+    # Visualize: target (red) + source (green) + missing regions (yellow)
+    o3d.visualization.draw_geometries([target_pcd, missing_pcd])
 
 
 
