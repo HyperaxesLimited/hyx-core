@@ -53,7 +53,7 @@ def preprocess_point_cloud(
     print(f"Preprocessed cloud has {len(pcd_down.points)} points")
     return pcd_down
 
-def register_point_clouds(source, target, voxel_size=0.05, max_iter=100):
+def register_point_clouds(source : o3d.geometry.PointCloud, target : o3d.geometry.PointCloud, voxel_size=0.05, max_iter=100):
     """
     Register source point cloud to target using point-to-plane ICP
     """
@@ -80,6 +80,49 @@ def register_point_clouds(source, target, voxel_size=0.05, max_iter=100):
     print(f"Registration finished with fitness: {result.fitness}, RMSE: {result.inlier_rmse}")
     return source_transformed, result.transformation
 
+def compute_cloud_distances(source : o3d.geometry.PointCloud, target : o3d.geometry.PointCloud) -> float:
+   """
+   Compute point-to-point distances between source and target clouds
+   """
+   # Convert target points to numpy array for KDTree
+   target_points = np.asarray(target.points)
+   source_points = np.asarray(source.points)
+  
+   # Build KDTree from target points
+   tree = KDTree(target_points)
+  
+   # Query the tree for nearest neighbor distances
+   distances, _ = tree.query(source_points)
+  
+   print(f"Computed distances for {len(source_points)} points")
+   return distances
+
+def analyze_changes(distances, threshold=0.1):
+   """
+   Analyze distances to identify significant changes
+   """
+   # Identify points with distance greater than threshold
+   change_indices = np.where(distances > threshold)[0]
+   change_distances = distances[change_indices]
+  
+   # Calculate statistics
+   if len(change_distances) > 0:
+       mean_change = np.mean(change_distances)
+       max_change = np.max(change_distances)
+       total_volume_change = len(change_indices) / len(distances)  # Approximate as percentage of points
+      
+       print(f"Detected {len(change_indices)} points with significant change")
+       print(f"Mean change: {mean_change:.3f}m, Max change: {max_change:.3f}m")
+       print(f"Approximate volume change: {total_volume_change*100:.2f}%")
+      
+       return change_indices, {
+           "mean_change": mean_change,
+           "max_change": max_change,
+           "volume_change_percentage": total_volume_change*100
+       }
+   else:
+       print("No significant changes detected")
+       return [], {"mean_change": 0, "max_change": 0, "volume_change_percentage": 0}
 
 
 if __name__ == "__main__":
@@ -91,15 +134,21 @@ if __name__ == "__main__":
     ORIGINAL = "MBES_Taranto_260225.ply"
     MODIFIED = "MBES_Taranto_260225_modified.ply"
 
+    # Hard code scan scenario
+    IS_SCAN_EQUAL = False
+
     pcd_processed = preprocess_point_cloud(load_point_cloud(ORIGINAL), VOXELS_SIZE)
 
     target_pcd = pcd_processed
-    source_pcd = preprocess_point_cloud(load_point_cloud(MODIFIED), voxel_size=0.1)
-    source_aligned, transformation = register_point_clouds(source_pcd, target_pcd, VOXELS_SIZE)
+    source_pcd = preprocess_point_cloud(load_point_cloud(ORIGINAL if IS_SCAN_EQUAL else MODIFIED), voxel_size=0.1)
+    source_aligned, _ = register_point_clouds(source_pcd, target_pcd, VOXELS_SIZE)
 
     target_pcd.paint_uniform_color(RED_COLOR)
     source_pcd.paint_uniform_color(BLUE_COLOR)
     source_aligned.paint_uniform_color(GREEN_COLOR)
+
+    distances = compute_cloud_distances(source_aligned, target_pcd)
+    analyze_changes(distances, threshold=0.3)
 
     o3d.visualization.draw_geometries([source_pcd, source_aligned, target_pcd])
 
