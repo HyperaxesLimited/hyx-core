@@ -257,15 +257,48 @@ if __name__ == "__main__":
 
     regions, missing_indices, region_labels = detect_missing_regions(source_aligned, target_pcd, distances, distance_threshold=0.9)
 
-    # Create visualization with missing regions highlighted
-    missing_pcd = o3d.geometry.PointCloud()
-    if len(missing_indices) > 0:
-        missing_points = np.asarray(source_aligned.points)[missing_indices]
-        missing_pcd.points = o3d.utility.Vector3dVector(missing_points)
-        missing_pcd.paint_uniform_color(RED_COLOR)  # Yellow for missing regions
+    # Print cluster information
+    print(f"\n{'='*60}")
+    print(f"CLUSTER ANALYSIS REPORT")
+    print(f"{'='*60}")
+    print(f"Number of clusters found: {len(regions)}")
+    print(f"{'='*60}\n")
 
-    # Visualize: target (red) + source (green) + missing regions (yellow)
-    o3d.visualization.draw_geometries([target_pcd, missing_pcd])
+    # Get all points coordinates
+    all_points = np.asarray(source_aligned.points)
+
+    # Print details for each cluster
+    for cluster_idx, region in enumerate(regions, 1):
+        print(f"Cluster {cluster_idx}:")
+        print(f"  Number of points: {len(region)}")
+        print(f"  Point coordinates:")
+
+        for point_idx in region:
+            coords = all_points[point_idx]
+            print(f"    Point {point_idx}: x={coords[0]:.3f}, y={coords[1]:.3f}, z={coords[2]:.3f}")
+
+        # Calculate and print centroid
+        cluster_points = all_points[region]
+        centroid = np.mean(cluster_points, axis=0)
+        print(f"  Centroid: x={centroid[0]:.3f}, y={centroid[1]:.3f}, z={centroid[2]:.3f}")
+        print()
+
+    # Create a colored version with gray background and red regions
+    colored_pcd = o3d.geometry.PointCloud()
+    colored_pcd.points = source_aligned.points
+
+    # Initialize all points with gray color
+    GRAY_COLOR = [0.7, 0.7, 0.7]
+    colors = np.tile(GRAY_COLOR, (len(source_aligned.points), 1))
+
+    # Color the regions in red
+    if len(missing_indices) > 0:
+        colors[missing_indices] = RED_COLOR
+
+    colored_pcd.colors = o3d.utility.Vector3dVector(colors)
+
+    # Visualize: entire point cloud with gray background and red regions
+    o3d.visualization.draw_geometries([colored_pcd])
 
 
 
