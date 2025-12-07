@@ -3,13 +3,31 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "3d-python-hyperaxes"
-version = "0.1.0"
-description = "Point cloud processing and analysis with Open3D"
+name = "pcd-hyperaxes-core"
+version = "1.0.0"
+description = "Point cloud analysis module for difference detection and comparison"
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [
-    { name = "Nicolas Abino" }
+    { name = "Nicola Sabino", email = "nicola.sabino@hyperaxes.com" }
+]
+maintainers = [
+    { name = "Nicola Sabino", email = "nicola.sabino@hyperaxes.com" }
+]
+license = { text = "MIT" }
+keywords = ["point-cloud", "3d", "lidar", "comparison", "analysis", "open3d", "hyperaxes"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Topic :: Scientific/Engineering :: Visualization",
 ]
 dependencies = [
     "numpy>=1.21.0",
@@ -18,6 +36,9 @@ dependencies = [
     "open3d>=0.17.0",
     "laspy>=2.3.0",
 ]
+
+[project.scripts]
+pcd-hyperaxes = "pcd_hyperaxes_core.cli:main"
 
 [project.optional-dependencies]
 dev = [
@@ -75,7 +96,12 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["converter"]
+known-first-party = ["pcd_hyperaxes_core"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pcd_hyperaxes_core*"]
+exclude = ["tests*", "docs*"]
 
 [tool.mypy]
 python_version = "3.9"
