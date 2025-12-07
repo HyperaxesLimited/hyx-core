@@ -1,0 +1,7 @@
+# Hidden folders
+.*/
+
+# Point cloud and geospatial data files
+*.ply
+*.laz
+*.xyz
