@@ -123,6 +123,40 @@ def analyze_changes(distances, threshold=0.1):
    else:
        print("No significant changes detected")
        return [], {"mean_change": 0, "max_change": 0, "volume_change_percentage": 0}
+   
+def create_distance_heatmap(source, distances):
+   """
+   Visualize the entire point cloud as a heatmap based on distance values
+   """
+   # Create a copy of the source cloud
+   heatmap_pcd = o3d.geometry.PointCloud()
+   heatmap_pcd.points = o3d.utility.Vector3dVector(np.asarray(source.points))
+  
+   # Normalize distances for visualization
+   min_dist = np.min(distances)
+   max_dist = np.max(distances)
+  
+   # Create a colormap (blue=close, red=far)
+   if max_dist > min_dist:
+       normalized_dists = (distances - min_dist) / (max_dist - min_dist)
+   else:
+       normalized_dists = np.ones_like(distances) * 0.5
+  
+   # Create color array using a gradient from blue to red
+   colors = np.zeros((len(distances), 3))
+   colors[:, 0] = normalized_dists  # Red channel increases with distance
+   colors[:, 2] = 1 - normalized_dists  # Blue channel decreases with distance
+  
+   # Add green component for a more dynamic color range
+   colors[:, 1] = np.where(normalized_dists < 0.5,
+                          normalized_dists * 2,
+                          (1 - normalized_dists) * 2)
+  
+   heatmap_pcd.colors = o3d.utility.Vector3dVector(colors)
+  
+   print(f"Heatmap color scale: Blue = {min_dist:.3f}m, Red = {max_dist:.3f}m")
+  
+   return heatmap_pcd
 
 
 if __name__ == "__main__":
@@ -148,8 +182,10 @@ if __name__ == "__main__":
     source_aligned.paint_uniform_color(GREEN_COLOR)
 
     distances = compute_cloud_distances(source_aligned, target_pcd)
-    analyze_changes(distances, threshold=0.3)
+    analyze_changes(distances, threshold=0.2)
 
-    o3d.visualization.draw_geometries([source_pcd, source_aligned, target_pcd])
+    heatmap_pcd = create_distance_heatmap(source_aligned, distances)
+    o3d.visualization.draw_geometries([heatmap_pcd])
+
 
 
