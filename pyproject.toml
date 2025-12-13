@@ -35,10 +35,12 @@ dependencies = [
     "matplotlib>=3.5.0",
     "open3d>=0.17.0",
     "laspy>=2.3.0",
+    "textual>=0.47.0",
 ]
 
 [project.scripts]
 pcd-hyperaxes = "pcd_hyperaxes_core.cli:main"
+pcd-hyperaxes-tui = "pcd_hyperaxes_core.tui:main"
 
 [project.optional-dependencies]
 dev = [

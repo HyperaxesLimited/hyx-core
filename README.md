@@ -18,6 +18,7 @@ A comprehensive Python module for point cloud comparison, registration, and diff
 - ✅ **Flexible Output Formats**: JSON, CSV, GeoJSON, or human-readable text
 - ✅ **GeoJSON Export**: Direct export for GIS applications (QGIS, ArcGIS, web mapping)
 - ✅ **Visualization**: Interactive 3D visualization with Open3D
+- ✅ **Text User Interface (TUI)**: Modern terminal UI with Textual
 - ✅ **Command-Line Interface**: Easy-to-use CLI for batch processing
 - ✅ **Python API**: Programmatic access for custom workflows
 
@@ -44,6 +45,26 @@ pip install pcd-hyperaxes-core
 ```
 
 ## Quick Start
+
+### Interactive TUI (Text User Interface)
+
+The easiest way to use the tool is through the interactive TUI:
+
+```bash
+# Launch the TUI
+pcd-hyperaxes-tui
+
+# Or with Python module
+python3 -m pcd_hyperaxes_core.tui
+```
+
+**TUI Features:**
+- 🖥️  Interactive terminal interface
+- 📁 Easy file selection
+- ⚙️  Visual parameter configuration
+- 📊 Real-time progress tracking
+- 📈 Results visualization in tables
+- 💾 Export results directly
 
 ### Command Line
 

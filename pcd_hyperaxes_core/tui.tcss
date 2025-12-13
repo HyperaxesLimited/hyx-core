@@ -1,0 +1,119 @@
+/* TUI Stylesheet for PCD Hyperaxes Core
+   
+   Author: Nicola Sabino
+   Company: Hyperaxes
+   Date: 2025-12-07
+*/
+
+Screen {
+    background: $surface;
+    layers: base overlay;
+}
+
+#title {
+    dock: top;
+    height: 3;
+    content-align: center middle;
+    background: $primary;
+    color: $text;
+    text-style: bold;
+    border: heavy $primary;
+}
+
+.box {
+    border: solid $accent;
+    height: auto;
+    padding: 1 2;
+    margin: 1;
+    background: $surface-darken-1;
+}
+
+.parameter-input {
+    width: 100%;
+    margin: 1 0;
+}
+
+.button-group {
+    height: auto;
+    align: center middle;
+    padding: 1;
+    margin: 1 0;
+}
+
+Button {
+    margin: 0 1;
+    min-width: 16;
+}
+
+Button.-primary {
+    background: $primary;
+}
+
+Button.-success {
+    background: $success;
+}
+
+Button.-error {
+    background: $error;
+}
+
+DataTable {
+    height: 100%;
+    border: solid $accent;
+}
+
+ProgressBar {
+    margin: 1 0;
+    height: 3;
+}
+
+.status {
+    height: 3;
+    content-align: center middle;
+    background: $boost;
+    padding: 1;
+    margin: 1;
+}
+
+.success {
+    background: $success;
+    color: $text;
+}
+
+.error {
+    background: $error;
+    color: $text;
+}
+
+.info {
+    background: $accent;
+    color: $text;
+}
+
+Label {
+    padding: 0 1;
+}
+
+TabbedContent {
+    height: 100%;
+}
+
+TabPane {
+    padding: 1;
+}
+
+Input {
+    border: solid $accent;
+}
+
+Input:focus {
+    border: solid $secondary;
+}
+
+Select {
+    border: solid $accent;
+}
+
+Select:focus {
+    border: solid $secondary;
+}
