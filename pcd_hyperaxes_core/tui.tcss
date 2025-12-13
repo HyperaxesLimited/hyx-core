@@ -1,119 +1,262 @@
-/* TUI Stylesheet for PCD Hyperaxes Core
-   
+/*
+   HyperAxes Point Cloud Analyzer - Retro TUI
+
    Author: Nicola Sabino
    Company: Hyperaxes
-   Date: 2025-12-07
+   Date: 2025-12-13
+
+   Color Scheme:
+   - Background: Black (terminal background)
+   - Text: Gray scale (#888888, #AAAAAA, #CCCCCC, #FFFFFF)
+   - Accent: Cyan (#5CFFFF)
 */
 
 Screen {
-    background: $surface;
-    layers: base overlay;
+    background: black;
+    color: #CCCCCC;
 }
 
-#title {
-    dock: top;
-    height: 3;
-    content-align: center middle;
-    background: $primary;
-    color: $text;
+Header {
+    display: none;
+}
+
+Footer {
+    background: black;
+    color: #888888;
+}
+
+/* Logo ASCII Art */
+#logo {
+    height: auto;
+    content-align: center top;
+    color: #5CFFFF;
+    background: black;
+    padding: 0 0 1 0;
     text-style: bold;
-    border: heavy $primary;
 }
 
+#subtitle {
+    height: 1;
+    content-align: center middle;
+    color: #888888;
+    background: black;
+    text-style: italic;
+}
+
+/* Minimal box styling */
 .box {
-    border: solid $accent;
+    border: solid #444444;
     height: auto;
     padding: 1 2;
-    margin: 1;
-    background: $surface-darken-1;
+    margin: 1 0;
+    background: black;
 }
 
-.parameter-input {
-    width: 100%;
-    margin: 1 0;
+.box-title {
+    color: #5CFFFF;
+    text-style: bold;
+    padding: 0 0 0 1;
+}
+
+Label {
+    color: #AAAAAA;
+    padding: 0 1;
+}
+
+/* Input fields */
+Input {
+    border: solid #444444;
+    background: black;
+    color: #FFFFFF;
+    padding: 0 1;
+}
+
+Input:focus {
+    border: solid #5CFFFF;
+    background: black;
+}
+
+Input > .input--placeholder {
+    color: #666666;
+}
+
+/* Select dropdown */
+Select {
+    border: solid #444444;
+    background: black;
+    color: #FFFFFF;
+}
+
+Select:focus {
+    border: solid #5CFFFF;
+}
+
+SelectCurrent {
+    background: black;
+    color: #FFFFFF;
+}
+
+SelectCurrent:focus {
+    background: black;
+    color: #5CFFFF;
+}
+
+SelectOverlay {
+    background: black;
+    border: solid #5CFFFF;
+}
+
+OptionList {
+    background: black;
+    color: #CCCCCC;
+}
+
+OptionList > .option-list--option-highlighted {
+    background: #222222;
+    color: #5CFFFF;
+}
+
+/* Buttons */
+Button {
+    margin: 0 1;
+    min-width: 16;
+    background: #222222;
+    color: #CCCCCC;
+    border: solid #444444;
+}
+
+Button:hover {
+    background: #333333;
+    color: #FFFFFF;
+    border: solid #5CFFFF;
+}
+
+Button:focus {
+    border: solid #5CFFFF;
+    text-style: bold;
+}
+
+Button.-primary {
+    background: #222222;
+    color: #5CFFFF;
+    border: solid #5CFFFF;
+}
+
+Button.-primary:hover {
+    background: #5CFFFF;
+    color: black;
 }
 
 .button-group {
     height: auto;
     align: center middle;
-    padding: 1;
-    margin: 1 0;
+    padding: 1 0;
+    margin: 0;
 }
 
-Button {
-    margin: 0 1;
-    min-width: 16;
-}
-
-Button.-primary {
-    background: $primary;
-}
-
-Button.-success {
-    background: $success;
-}
-
-Button.-error {
-    background: $error;
-}
-
-DataTable {
-    height: 100%;
-    border: solid $accent;
-}
-
+/* Progress bar */
 ProgressBar {
     margin: 1 0;
-    height: 3;
+    height: 1;
 }
 
+Bar > .bar--bar {
+    color: #5CFFFF;
+}
+
+Bar > .bar--complete {
+    color: #5CFFFF;
+}
+
+/* Status messages */
 .status {
-    height: 3;
-    content-align: center middle;
-    background: $boost;
+    height: auto;
     padding: 1;
-    margin: 1;
+    margin: 1 0;
+    color: #CCCCCC;
+    background: black;
+    border: solid #444444;
 }
 
-.success {
-    background: $success;
-    color: $text;
+.status-success {
+    color: #5CFFFF;
+    border: solid #5CFFFF;
 }
 
-.error {
-    background: $error;
-    color: $text;
+.status-error {
+    color: #FF5C5C;
+    border: solid #FF5C5C;
 }
 
-.info {
-    background: $accent;
-    color: $text;
+.status-info {
+    color: #AAAAAA;
+    border: solid #666666;
 }
 
-Label {
-    padding: 0 1;
+/* Data table */
+DataTable {
+    height: 100%;
+    background: black;
+    color: #CCCCCC;
+    border: solid #444444;
 }
 
+DataTable > .datatable--header {
+    background: black;
+    color: #5CFFFF;
+    text-style: bold;
+}
+
+DataTable > .datatable--cursor {
+    background: #222222;
+    color: #5CFFFF;
+}
+
+/* Tabs */
 TabbedContent {
     height: 100%;
+    background: black;
+}
+
+Tabs {
+    background: black;
+}
+
+Tab {
+    background: black;
+    color: #888888;
+    border: solid #444444;
+}
+
+Tab:hover {
+    color: #CCCCCC;
+}
+
+Tab.-active {
+    color: #5CFFFF;
+    border: solid #5CFFFF;
+    background: black;
+    text-style: bold;
+}
+
+ContentSwitcher {
+    background: black;
 }
 
 TabPane {
     padding: 1;
+    background: black;
 }
 
-Input {
-    border: solid $accent;
+/* Scrollbar */
+ScrollableContainer {
+    background: black;
 }
 
-Input:focus {
-    border: solid $secondary;
+ScrollableContainer > .scrollbar--vertical {
+    background: #222222;
 }
 
-Select {
-    border: solid $accent;
-}
-
-Select:focus {
-    border: solid $secondary;
+ScrollableContainer > .scrollbar--vertical .scrollbar--thumb {
+    background: #5CFFFF;
 }

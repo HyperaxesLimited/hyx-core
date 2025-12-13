@@ -22,27 +22,195 @@ A comprehensive Python module for point cloud comparison, registration, and diff
 - ✅ **Command-Line Interface**: Easy-to-use CLI for batch processing
 - ✅ **Python API**: Programmatic access for custom workflows
 
+## Prerequisites
+
+Before installing, ensure you have the following installed on your system:
+
+### Python 3.9 or higher
+
+**macOS:**
+```bash
+# Using Homebrew (recommended)
+brew install python@3.9
+
+# Or download from python.org
+# https://www.python.org/downloads/
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt-get update
+sudo apt-get install python3.9 python3.9-venv python3-pip
+```
+
+**Linux (RHEL/CentOS/Fedora):**
+```bash
+sudo dnf install python39 python39-pip
+# or
+sudo yum install python39 python39-pip
+```
+
+**Windows:**
+- Download installer from [python.org](https://www.python.org/downloads/)
+- **Important:** During installation, check "Add Python to PATH"
+- Verify installation: Open Command Prompt and run `python --version`
+
+### Git
+
+**macOS:**
+```bash
+# Using Homebrew
+brew install git
+
+# Or install Xcode Command Line Tools
+xcode-select --install
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt-get install git
+```
+
+**Linux (RHEL/CentOS/Fedora):**
+```bash
+sudo dnf install git
+```
+
+**Windows:**
+- Download from [git-scm.com](https://git-scm.com/download/win)
+- During installation, select "Git from the command line and also from 3rd-party software"
+
 ## Installation
 
-### From Source
+### 1. Clone the Repository
 
 ```bash
-# Clone the repository
 git clone https://github.com/hyperaxes/pcd_hyperaxes_core.git
 cd pcd_hyperaxes_core
+```
 
-# Install in editable mode
+Or if using a different repository URL:
+```bash
+git clone <your-repository-url>
+cd 3d-python-hyperaxes
+```
+
+### 2. Create Virtual Environment (Recommended)
+
+Using a virtual environment isolates dependencies and prevents conflicts with system packages.
+
+**macOS/Linux:**
+```bash
+# Create virtual environment
+python3 -m venv .venv
+
+# Activate virtual environment
+source .venv/bin/activate
+```
+
+**Windows (Command Prompt):**
+```cmd
+# Create virtual environment
+python -m venv .venv
+
+# Activate virtual environment
+.venv\Scripts\activate.bat
+```
+
+**Windows (PowerShell):**
+```powershell
+# Create virtual environment
+python -m venv .venv
+
+# Activate virtual environment
+.venv\Scripts\Activate.ps1
+```
+
+*Note: If you get an execution policy error on PowerShell, run:*
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+### 3. Install the Package
+
+After activating your virtual environment:
+
+```bash
+# Install in editable mode with all dependencies
 pip install -e .
 
 # Or install with development dependencies
 pip install -e ".[dev]"
 ```
 
-### Using pip (when published)
+### 4. Verify Installation
+
+```bash
+# Check that CLI commands are available
+pcd-hyperaxes --help
+pcd-hyperaxes-tui --help
+
+# Verify Python can import the module
+python -c "import pcd_hyperaxes_core; print('✓ Installation successful')"
+```
+
+### Using pip (when published to PyPI)
 
 ```bash
 pip install pcd-hyperaxes-core
 ```
+
+## Troubleshooting
+
+### Common Issues
+
+**1. "pip: command not found" or "pip3: command not found"**
+- Ensure Python is installed correctly
+- Try using `python -m pip` instead of `pip`
+- On Linux, install pip: `sudo apt-get install python3-pip`
+
+**2. Permission Errors on macOS/Linux**
+- Use a virtual environment (recommended)
+- Or use `--user` flag: `pip install --user -e .`
+- Avoid using `sudo pip` (can cause system-wide conflicts)
+
+**3. Open3D Installation Issues**
+- Open3D requires a recent C++ compiler
+- **macOS:** Install Xcode Command Line Tools: `xcode-select --install`
+- **Linux:** Install build tools: `sudo apt-get install build-essential`
+- **Windows:** Ensure Visual C++ redistributables are installed
+
+**4. PowerShell Execution Policy Error (Windows)**
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+**5. "Module not found" after installation**
+- Ensure your virtual environment is activated
+- Try deactivating and reactivating: `deactivate` then `source .venv/bin/activate`
+- Reinstall: `pip install -e .`
+
+**6. Git Clone Issues**
+- If using SSH: Ensure your SSH key is added to GitHub/GitLab
+- If using HTTPS: May need to configure credentials
+- Check firewall/proxy settings
+
+### Platform-Specific Notes
+
+**macOS (Apple Silicon M1/M2/M3):**
+- Some dependencies may require Rosetta 2
+- If you encounter issues, try installing x86_64 Python via Homebrew
+- Open3D has native ARM support in recent versions
+
+**Linux:**
+- Some distributions may require additional system dependencies for Open3D
+- Ubuntu/Debian: `sudo apt-get install libgl1-mesa-glx libglib2.0-0`
+- CentOS/RHEL: `sudo yum install mesa-libGL`
+
+**Windows:**
+- Ensure Visual C++ Redistributables are installed (required by Open3D)
+- Download from: https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
+- If visualization doesn't work, update your graphics drivers
 
 ## Quick Start
 
@@ -378,6 +546,7 @@ done
 - matplotlib ≥ 3.5.0
 - open3d ≥ 0.17.0
 - laspy ≥ 2.3.0
+- textual ≥ 0.47.0 (for TUI)
 
 ## Development
 

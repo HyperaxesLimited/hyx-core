@@ -1,17 +1,16 @@
 """
 Text User Interface (TUI) for pcd_hyperaxes_core.
 
-Interactive terminal-based interface for point cloud analysis.
+Retro-style terminal interface for point cloud analysis.
 
 Author: Nicola Sabino
 Company: Hyperaxes
-Date: 2025-12-07
+Date: 2025-12-13
 """
 
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical, ScrollableContainer
 from textual.widgets import (
-    Header,
     Footer,
     Button,
     Input,
@@ -19,8 +18,6 @@ from textual.widgets import (
     Static,
     DataTable,
     ProgressBar,
-    TabbedContent,
-    TabPane,
     Select,
 )
 from textual.binding import Binding
@@ -38,99 +35,109 @@ from pcd_hyperaxes_core.core.clustering import detect_missing_regions
 from pcd_hyperaxes_core.output.models import AnalysisResults, ClusterInfo
 from pcd_hyperaxes_core.config import (
     PreprocessingConfig,
-    RegistrationConfig,
     AnalysisConfig,
-    VisualizationConfig,
-    OutputConfig,
 )
 import numpy as np
+
+
+LOGO = """    __  __                      ___
+   / / / /_  ______  ___  _____/   |  _  _____  _____
+  / /_/ / / / / __ \\/ _ \\/ ___/ /| | | |/_/ _ \\/ ___/
+ / __  / /_/ / /_/ /  __/ /  / ___ |_>  </  __(__  )
+/_/ /_/\\__, / .___/\\___/_/  /_/  |_/_/|_|\\___/____/
+      /____/_/                                       """
 
 
 class ConfigScreen(Screen):
     """Configuration screen for analysis parameters."""
 
     BINDINGS = [
-        Binding("escape", "app.pop_screen", "Back"),
-        Binding("ctrl+r", "run_analysis", "Run Analysis"),
+        Binding("escape", "quit", "Quit"),
+        Binding("ctrl+r", "run_analysis", "Run"),
     ]
 
     def __init__(self, source_file: Optional[Path] = None, target_file: Optional[Path] = None):
         super().__init__()
         self.source_file = source_file
         self.target_file = target_file
-        self.results = None
 
     def compose(self) -> ComposeResult:
-        yield Header()
-        yield Static("Point Cloud Analysis Configuration", id="title")
+        # Logo
+        yield Static(LOGO, id="logo")
+        yield Static("Point Cloud Difference Detection", id="subtitle")
 
         with ScrollableContainer():
-            # File selection
+            # File inputs
             with Vertical(classes="box"):
-                yield Label("📁 Input Files")
-                yield Label(f"Source: {self.source_file or 'Not selected'}")
-                yield Label(f"Target: {self.target_file or 'Not selected'}")
-                with Horizontal(classes="button-group"):
-                    yield Button("Select Source", id="select_source", variant="primary")
-                    yield Button("Select Target", id="select_target", variant="primary")
-
-            # Preprocessing parameters
-            with Vertical(classes="box"):
-                yield Label("⚙️  Preprocessing Parameters")
-                yield Label("Voxel Size:")
-                yield Input(placeholder="0.1", id="voxel_size", classes="parameter-input")
-                yield Label("Remove Outliers:")
-                yield Select(
-                    [("Yes", True), ("No", False)],
-                    value=True,
-                    id="remove_outliers",
-                    allow_blank=False,
+                yield Label("INPUT FILES", classes="box-title")
+                yield Label("Source file:")
+                yield Input(
+                    placeholder="path/to/source.ply",
+                    id="source_file",
+                    value=str(self.source_file) if self.source_file else "",
+                )
+                yield Label("Target file:")
+                yield Input(
+                    placeholder="path/to/target.ply",
+                    id="target_file",
+                    value=str(self.target_file) if self.target_file else "",
                 )
 
-            # Analysis parameters
+            # Parameters
             with Vertical(classes="box"):
-                yield Label("🔍 Analysis Parameters")
-                yield Label("Distance Threshold:")
-                yield Input(placeholder="0.2", id="distance_threshold", classes="parameter-input")
-                yield Label("Region Threshold:")
-                yield Input(placeholder="0.9", id="region_threshold", classes="parameter-input")
-                yield Label("Minimum Region Size:")
-                yield Input(placeholder="10", id="region_size", classes="parameter-input")
+                yield Label("PARAMETERS", classes="box-title")
+                yield Label("Voxel size:")
+                yield Input(placeholder="0.1", id="voxel_size", value="0.1")
+                yield Label("Distance threshold:")
+                yield Input(placeholder="0.2", id="distance_threshold", value="0.2")
+                yield Label("Region threshold:")
+                yield Input(placeholder="0.9", id="region_threshold", value="0.9")
 
-            # Output options
+            # Output
             with Vertical(classes="box"):
-                yield Label("💾 Output Options")
-                yield Label("Output Format:")
+                yield Label("OUTPUT", classes="box-title")
+                yield Label("Format:")
                 yield Select(
                     [("JSON", "json"), ("CSV", "csv"), ("GeoJSON", "geojson"), ("Text", "text")],
                     id="output_format",
+                    value="json",
                     allow_blank=False,
                 )
-                yield Label("Output File:")
-                yield Input(placeholder="results.json", id="output_file", classes="parameter-input")
+                yield Label("Save to file (optional):")
+                yield Input(placeholder="results.json", id="output_file")
 
             # Action buttons
             with Horizontal(classes="button-group"):
-                yield Button("▶️  Run Analysis", id="run_analysis", variant="success")
-                yield Button("❌ Cancel", id="cancel", variant="error")
+                yield Button("RUN ANALYSIS", id="run_btn", variant="primary")
+                yield Button("QUIT", id="quit_btn")
 
         yield Footer()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button presses."""
-        if event.button.id == "run_analysis":
+        if event.button.id == "run_btn":
             self.action_run_analysis()
-        elif event.button.id == "cancel":
-            self.app.pop_screen()
-        elif event.button.id == "select_source":
-            self.notify("File selection not yet implemented - use CLI for now", severity="information")
-        elif event.button.id == "select_target":
-            self.notify("File selection not yet implemented - use CLI for now", severity="information")
+        elif event.button.id == "quit_btn":
+            self.app.exit()
 
     async def action_run_analysis(self) -> None:
         """Run the analysis with configured parameters."""
-        if not self.source_file or not self.target_file:
-            self.notify("Please select both source and target files", severity="error")
+        # Get file paths
+        source_path = self.query_one("#source_file", Input).value.strip()
+        target_path = self.query_one("#target_file", Input).value.strip()
+
+        if not source_path or not target_path:
+            self.notify("Please specify both source and target files", severity="error")
+            return
+
+        source_file = Path(source_path)
+        target_file = Path(target_path)
+
+        if not source_file.exists():
+            self.notify(f"Source file not found: {source_file}", severity="error")
+            return
+        if not target_file.exists():
+            self.notify(f"Target file not found: {target_file}", severity="error")
             return
 
         # Get parameters
@@ -138,21 +145,21 @@ class ConfigScreen(Screen):
             voxel_size = float(self.query_one("#voxel_size", Input).value or "0.1")
             distance_threshold = float(self.query_one("#distance_threshold", Input).value or "0.2")
             region_threshold = float(self.query_one("#region_threshold", Input).value or "0.9")
-            region_size = int(self.query_one("#region_size", Input).value or "10")
-            remove_outliers = self.query_one("#remove_outliers", Select).value
+            output_format = self.query_one("#output_format", Select).value
+            output_file = self.query_one("#output_file", Input).value.strip()
         except ValueError as e:
             self.notify(f"Invalid parameter value: {e}", severity="error")
             return
 
         # Show progress screen
         progress_screen = ProgressScreen(
-            source_file=self.source_file,
-            target_file=self.target_file,
+            source_file=source_file,
+            target_file=target_file,
             voxel_size=voxel_size,
             distance_threshold=distance_threshold,
             region_threshold=region_threshold,
-            region_size=region_size,
-            remove_outliers=remove_outliers,
+            output_format=output_format,
+            output_file=output_file if output_file else None,
         )
         self.app.push_screen(progress_screen)
 
@@ -160,18 +167,21 @@ class ConfigScreen(Screen):
 class ProgressScreen(Screen):
     """Screen showing analysis progress."""
 
+    BINDINGS = [
+        Binding("escape", "app.pop_screen", "Back"),
+    ]
+
     def __init__(self, **params):
         super().__init__()
         self.params = params
 
     def compose(self) -> ComposeResult:
-        yield Header()
-        yield Static("Analysis in Progress...", id="title")
+        yield Static(LOGO, id="logo")
+        yield Static("Running Analysis...", id="subtitle")
 
         with ScrollableContainer():
-            yield Label("🔄 Running point cloud analysis", classes="status info")
+            yield Label("", id="status_msg", classes="status status-info")
             yield ProgressBar(id="progress", total=100, show_eta=False)
-            yield Label("", id="status_message")
 
         yield Footer()
 
@@ -182,53 +192,56 @@ class ProgressScreen(Screen):
     async def run_analysis(self) -> None:
         """Execute the analysis pipeline."""
         progress = self.query_one("#progress", ProgressBar)
-        status = self.query_one("#status_message", Label)
+        status = self.query_one("#status_msg", Label)
 
         try:
             # Load point clouds
-            status.update("Loading source point cloud...")
+            status.update("[ 1/6 ] Loading source point cloud...")
+            status.remove_class("status-error")
+            status.add_class("status-info")
             progress.update(progress=10)
+            await asyncio.sleep(0.1)
             source_orig = load_point_cloud(self.params["source_file"])
 
-            status.update("Loading target point cloud...")
+            status.update("[ 2/6 ] Loading target point cloud...")
             progress.update(progress=20)
+            await asyncio.sleep(0.1)
             target_orig = load_point_cloud(self.params["target_file"])
 
             # Preprocess
-            status.update("Preprocessing point clouds...")
-            progress.update(progress=30)
-            prep_config = PreprocessingConfig(
-                voxel_size=self.params["voxel_size"],
-                remove_outliers=self.params["remove_outliers"],
-            )
+            status.update("[ 3/6 ] Preprocessing clouds...")
+            progress.update(progress=35)
+            await asyncio.sleep(0.1)
+            prep_config = PreprocessingConfig(voxel_size=self.params["voxel_size"])
             source = preprocess_point_cloud(source_orig, prep_config)
             target = preprocess_point_cloud(target_orig, prep_config)
 
             # Register
-            status.update("Registering point clouds...")
+            status.update("[ 4/6 ] Registering clouds (ICP)...")
             progress.update(progress=50)
+            await asyncio.sleep(0.1)
             source_aligned, _ = register_point_clouds(source, target, self.params["voxel_size"])
 
             # Analyze
-            status.update("Computing distances...")
+            status.update("[ 5/6 ] Computing distances...")
             progress.update(progress=70)
+            await asyncio.sleep(0.1)
             distances = compute_cloud_distances(source_aligned, target)
-            _, change_stats = analyze_changes(distances)
+            _, change_stats = analyze_changes(distances, self.params["distance_threshold"])
 
             # Detect regions
-            status.update("Detecting change regions...")
+            status.update("[ 6/6 ] Detecting change regions...")
             progress.update(progress=85)
+            await asyncio.sleep(0.1)
             analysis_config = AnalysisConfig(
                 distance_threshold=self.params["distance_threshold"],
                 region_distance_threshold=self.params["region_threshold"],
-                region_size_threshold=self.params["region_size"],
             )
             regions, missing_indices, region_labels = detect_missing_regions(
                 source_aligned, target, distances, analysis_config
             )
 
             # Build results
-            status.update("Generating results...")
             progress.update(progress=95)
             all_points = np.asarray(source_aligned.points)
             clusters = [
@@ -247,6 +260,8 @@ class ProgressScreen(Screen):
                     "min": float(np.min(distances)),
                     "max": float(np.max(distances)),
                     "mean": float(np.mean(distances)),
+                    "median": float(np.median(distances)),
+                    "std": float(np.std(distances)),
                 },
                 change_stats=change_stats,
                 num_clusters=len(regions),
@@ -254,16 +269,26 @@ class ProgressScreen(Screen):
             )
 
             progress.update(progress=100)
-            status.update("✅ Analysis complete!")
+            status.update("[ DONE ] Analysis complete")
+            status.remove_class("status-info")
+            status.add_class("status-success")
 
             # Show results screen
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.5)
             self.app.pop_screen()
-            self.app.push_screen(ResultsScreen(results))
+            self.app.push_screen(
+                ResultsScreen(
+                    results,
+                    output_format=self.params.get("output_format", "json"),
+                    output_file=self.params.get("output_file"),
+                )
+            )
 
         except Exception as e:
-            status.update(f"❌ Error: {str(e)}")
-            self.notify(f"Analysis failed: {e}", severity="error")
+            status.update(f"[ ERROR ] {str(e)}")
+            status.remove_class("status-info")
+            status.add_class("status-error")
+            self.notify(f"Analysis failed: {e}", severity="error", timeout=10)
 
 
 class ResultsScreen(Screen):
@@ -272,90 +297,110 @@ class ResultsScreen(Screen):
     BINDINGS = [
         Binding("escape", "app.pop_screen", "Back"),
         Binding("s", "save_results", "Save"),
+        Binding("q", "quit", "Quit"),
     ]
 
-    def __init__(self, results: AnalysisResults):
+    def __init__(
+        self,
+        results: AnalysisResults,
+        output_format: str = "json",
+        output_file: Optional[str] = None,
+    ):
         super().__init__()
         self.results = results
+        self.output_format = output_format
+        self.output_file = output_file
 
     def compose(self) -> ComposeResult:
-        yield Header()
-        yield Static("Analysis Results", id="title")
+        yield Static(LOGO, id="logo")
+        yield Static("Analysis Results", id="subtitle")
 
-        with TabbedContent():
-            with TabPane("Summary", id="summary_tab"):
-                with ScrollableContainer():
-                    yield Label(f"Source: {self.results.source_file}")
-                    yield Label(f"Target: {self.results.target_file}")
-                    yield Label(f"Total source points: {self.results.total_source_points:,}")
-                    yield Label(f"Total target points: {self.results.total_target_points:,}")
-                    yield Label(f"Clusters detected: {self.results.num_clusters}")
+        with ScrollableContainer():
+            # Summary
+            with Vertical(classes="box"):
+                yield Label("SUMMARY", classes="box-title")
+                yield Label(f"Source: {Path(self.results.source_file).name}")
+                yield Label(f"Target: {Path(self.results.target_file).name}")
+                yield Label(f"Clusters detected: {self.results.num_clusters}")
+                yield Label(
+                    f"Changed points: {self.results.change_stats.get('num_changed_points', 0)}"
+                )
 
-                    with Vertical(classes="box"):
-                        yield Label("📊 Distance Statistics")
-                        for key, value in self.results.distance_stats.items():
-                            yield Label(f"  {key}: {value:.4f}")
+            # Distance stats
+            with Vertical(classes="box"):
+                yield Label("DISTANCE STATISTICS", classes="box-title")
+                for key, value in self.results.distance_stats.items():
+                    yield Label(f"{key:12s} : {value:.4f}")
 
-                    with Vertical(classes="box"):
-                        yield Label("📈 Change Statistics")
-                        for key, value in self.results.change_stats.items():
-                            yield Label(f"  {key}: {value:.4f}")
+            # Change stats
+            with Vertical(classes="box"):
+                yield Label("CHANGE STATISTICS", classes="box-title")
+                for key, value in self.results.change_stats.items():
+                    yield Label(f"{key:20s} : {value:.4f}")
 
-            with TabPane("Clusters", id="clusters_tab"):
-                table = DataTable()
-                table.add_columns("ID", "Points", "Centroid X", "Centroid Y", "Centroid Z")
-                for cluster in self.results.clusters:
-                    table.add_row(
-                        str(cluster.cluster_id),
-                        str(cluster.num_points),
-                        f"{cluster.centroid[0]:.3f}",
-                        f"{cluster.centroid[1]:.3f}",
-                        f"{cluster.centroid[2]:.3f}",
-                    )
-                yield table
+            # Clusters table
+            if self.results.clusters:
+                with Vertical(classes="box"):
+                    yield Label("DETECTED CLUSTERS", classes="box-title")
+                    table = DataTable()
+                    table.add_columns("ID", "Points", "X", "Y", "Z")
+                    for cluster in self.results.clusters:
+                        table.add_row(
+                            str(cluster.cluster_id),
+                            str(cluster.num_points),
+                            f"{cluster.centroid[0]:.2f}",
+                            f"{cluster.centroid[1]:.2f}",
+                            f"{cluster.centroid[2]:.2f}",
+                        )
+                    yield table
 
-        with Horizontal(classes="button-group"):
-            yield Button("💾 Save Results", id="save", variant="success")
-            yield Button("🔙 Back", id="back", variant="primary")
+            # Action buttons
+            with Horizontal(classes="button-group"):
+                yield Button("SAVE", id="save_btn", variant="primary")
+                yield Button("BACK", id="back_btn")
+                yield Button("QUIT", id="quit_btn")
 
         yield Footer()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button presses."""
-        if event.button.id == "save":
+        if event.button.id == "save_btn":
             self.action_save_results()
-        elif event.button.id == "back":
+        elif event.button.id == "back_btn":
             self.app.pop_screen()
+        elif event.button.id == "quit_btn":
+            self.app.exit()
 
     def action_save_results(self) -> None:
         """Save results to file."""
-        output_file = Path("tui_analysis_results.json")
-        with open(output_file, "w") as f:
-            json.dump(self.results.to_dict(), f, indent=2)
-        self.notify(f"Results saved to {output_file}", severity="information")
+        from pcd_hyperaxes_core.output.formatters import ResultFormatter
+        from pcd_hyperaxes_core.config import OutputConfig
+
+        if not self.output_file:
+            self.output_file = f"results.{self.output_format}"
+
+        output_config = OutputConfig(
+            mode="full", format=self.output_format, output_file=Path(self.output_file)
+        )
+        formatter = ResultFormatter(output_config)
+        formatter.format_and_save(self.results)
+
+        self.notify(f"Results saved to {self.output_file}", severity="information")
 
 
 class PCDAnalyzerTUI(App):
     """Main TUI application for point cloud analysis."""
 
     CSS_PATH = "tui.tcss"
-    TITLE = "PCD Hyperaxes Core - Point Cloud Analyzer"
+    TITLE = "HyperAxes Point Cloud Analyzer"
+
     BINDINGS = [
         Binding("q", "quit", "Quit"),
-        Binding("?", "help", "Help"),
     ]
 
     def on_mount(self) -> None:
         """Initialize the application."""
         self.push_screen(ConfigScreen())
-
-    def action_help(self) -> None:
-        """Show help message."""
-        self.notify(
-            "Use arrow keys and tab to navigate. Press 'q' to quit.",
-            title="Help",
-            severity="information",
-        )
 
 
 def main():
