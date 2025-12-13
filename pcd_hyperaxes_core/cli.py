@@ -74,6 +74,9 @@ Examples:
 
   # Verbose output with CSV export
   pcd-hyperaxes source.ply target.ply -v --format csv -o results.csv
+
+  # Export to GeoJSON for GIS applications
+  pcd-hyperaxes source.ply target.ply --format geojson -o differences.geojson
         """,
     )
 
@@ -129,7 +132,7 @@ Examples:
         help="Output mode: full (all details), centroid (centroids only), summary (statistics only)",
     )
     output_group.add_argument(
-        "--format", choices=["json", "text", "csv"], default="json", help="Output format (default: json)"
+        "--format", choices=["json", "text", "csv", "geojson"], default="json", help="Output format (default: json)"
     )
     output_group.add_argument("-o", "--output", type=Path, metavar="FILE", help="Save results to file")
 

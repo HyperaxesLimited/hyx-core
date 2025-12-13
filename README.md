@@ -15,7 +15,8 @@ A comprehensive Python module for point cloud comparison, registration, and diff
 - ✅ **Automatic Registration**: ICP-based point cloud alignment
 - ✅ **Change Detection**: Statistical analysis and clustering
 - ✅ **Multiple Output Modes**: Full details, centroids only, or summary statistics
-- ✅ **Flexible Output Formats**: JSON, CSV, or human-readable text
+- ✅ **Flexible Output Formats**: JSON, CSV, GeoJSON, or human-readable text
+- ✅ **GeoJSON Export**: Direct export for GIS applications (QGIS, ArcGIS, web mapping)
 - ✅ **Visualization**: Interactive 3D visualization with Open3D
 - ✅ **Command-Line Interface**: Easy-to-use CLI for batch processing
 - ✅ **Python API**: Programmatic access for custom workflows
@@ -62,6 +63,13 @@ pcd-hyperaxes source.ply target.ply \
   --distance-threshold 0.3 \
   --region-threshold 1.0 \
   --format csv -o results.csv
+
+# Export to GeoJSON for GIS applications
+pcd-hyperaxes source.ply target.ply \
+  --mode centroid \
+  --format geojson \
+  --no-plot \
+  -o differences.geojson
 ```
 
 ### Python API
@@ -125,7 +133,7 @@ print(f"Found {len(regions)} regions of differences")
   - `full`: All cluster details including point coordinates
   - `centroid`: Only cluster centroids
   - `summary`: Statistics only
-- `--format {json,text,csv}`: Output format (default: json)
+- `--format {json,text,csv,geojson}`: Output format (default: json)
 - `-o, --output FILE`: Save results to file
 
 ### Visualization Options
@@ -210,6 +218,74 @@ Change Statistics:
 Detected Clusters: 3
 ============================================================
 ```
+
+### GeoJSON Mode
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [10.5, 20.3, 5.2]
+      },
+      "properties": {
+        "cluster_id": 1,
+        "num_points": 850,
+        "centroid_x": 10.5,
+        "centroid_y": 20.3,
+        "centroid_z": 5.2,
+        "source_file": "source.ply",
+        "target_file": "target.ply"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [15.2, 25.1, 3.8]
+      },
+      "properties": {
+        "cluster_id": 2,
+        "num_points": 450,
+        "centroid_x": 15.2,
+        "centroid_y": 25.1,
+        "centroid_z": 3.8,
+        "source_file": "source.ply",
+        "target_file": "target.ply"
+      }
+    }
+  ],
+  "metadata": {
+    "num_clusters": 2,
+    "analysis_type": "point_cloud_difference_detection",
+    "software": "pcd_hyperaxes_core",
+    "version": "1.0.0",
+    "distance_stats": {
+      "min": 0.001,
+      "max": 2.5,
+      "mean": 0.15,
+      "median": 0.12,
+      "std": 0.25
+    },
+    "change_stats": {
+      "num_changed_points": 1500,
+      "mean_change": 0.45,
+      "max_change": 2.5,
+      "volume_change_percentage": 3.0
+    }
+  }
+}
+```
+
+**GeoJSON can be directly imported into:**
+- QGIS (Quantum GIS)
+- ArcGIS / ArcGIS Pro
+- Web mapping libraries (Leaflet, Mapbox, OpenLayers)
+- PostGIS databases
+- Google Earth (convert to KML)
 
 ## Module Structure
 

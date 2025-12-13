@@ -38,6 +38,8 @@ class ResultFormatter:
             output = json.dumps(data, indent=2)
         elif self.config.format == "csv":
             output = self._to_csv(data)
+        elif self.config.format == "geojson":
+            output = self._to_geojson(data, results)
         else:  # text
             output = self._to_text(data)
 
@@ -72,6 +74,76 @@ class ResultFormatter:
                     writer.writerow([key, value])
 
         return output.getvalue()
+
+    def _to_geojson(self, data: dict, results: AnalysisResults) -> str:
+        """
+        Format data as GeoJSON FeatureCollection.
+
+        Each cluster becomes a Feature with:
+        - Point geometry at centroid (or MultiPoint for all points in full mode)
+        - Properties: cluster_id, num_points, centroid coordinates
+        """
+        features = []
+
+        if "clusters" in data:
+            for cluster in data["clusters"]:
+                centroid = cluster["centroid"]
+
+                # Create feature properties
+                properties = {
+                    "cluster_id": cluster["cluster_id"],
+                    "num_points": cluster["num_points"],
+                    "centroid_x": centroid[0],
+                    "centroid_y": centroid[1],
+                    "centroid_z": centroid[2],
+                }
+
+                # Add metadata if available
+                if "source_file" in data:
+                    properties["source_file"] = data["source_file"]
+                    properties["target_file"] = data["target_file"]
+
+                # Geometry based on mode
+                if "points" in cluster and cluster["points"] and self.config.mode == "full":
+                    # Full mode: MultiPoint with all points
+                    coordinates = [[p[0], p[1], p[2]] for p in cluster["points"]]
+                    geometry = {
+                        "type": "MultiPoint",
+                        "coordinates": coordinates
+                    }
+                else:
+                    # Centroid mode: Single Point at centroid
+                    geometry = {
+                        "type": "Point",
+                        "coordinates": [centroid[0], centroid[1], centroid[2]]
+                    }
+
+                feature = {
+                    "type": "Feature",
+                    "geometry": geometry,
+                    "properties": properties
+                }
+                features.append(feature)
+
+        # Create GeoJSON FeatureCollection
+        geojson = {
+            "type": "FeatureCollection",
+            "features": features,
+            "metadata": {
+                "num_clusters": len(features),
+                "analysis_type": "point_cloud_difference_detection",
+                "software": "pcd_hyperaxes_core",
+                "version": "1.0.0"
+            }
+        }
+
+        # Add statistics to metadata if available
+        if "distance_stats" in data:
+            geojson["metadata"]["distance_stats"] = data["distance_stats"]
+        if "change_stats" in data:
+            geojson["metadata"]["change_stats"] = data["change_stats"]
+
+        return json.dumps(geojson, indent=2)
 
     def _to_text(self, data: dict) -> str:
         """Format data as human-readable text."""
