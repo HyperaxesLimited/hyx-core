@@ -52,7 +52,64 @@ Simply follow the on-screen prompts to:
 4. Run the analysis
 5. View and export results
 
-### Option B: Command Line Interface
+### Option B: LLM Chat Interface (Natural Language)
+
+Talk to HyperAxes in natural language using AI-powered conversation:
+
+```bash
+pcd-hyperaxes-chat
+```
+
+**Chat Features:**
+- 🗣️ Natural language interaction
+- 🤖 AI-guided workflow (step-by-step)
+- 🎯 Automatic parameter configuration
+- 🌐 Web-based 3D visualization with three.js
+- 💬 Context-aware conversations
+
+**Prerequisites:**
+1. Install and start Ollama:
+   ```bash
+   # Install from https://ollama.ai
+   ollama serve
+
+   # Download model (in another terminal)
+   ollama pull llama3.1
+   ```
+
+2. Launch chat interface:
+   ```bash
+   pcd-hyperaxes-chat
+   ```
+
+**Example Conversation:**
+```
+💬 You: I want to compare two point cloud scans
+
+🤖 Assistant: I'd be happy to help! What are the file paths?
+
+💬 You: Source is scan1.ply and target is scan2.ply
+
+🤖 Assistant: Great! Run analysis with defaults?
+
+💬 You: Yes, and show visualization
+
+🤖 Assistant: Running analysis... [opens 3D web viewer]
+```
+
+**Chat Commands:**
+- `status` - Show current configuration
+- `quit` / `exit` / `bye` - End session
+- Any natural language request for analysis
+
+**Available Models:**
+```bash
+pcd-hyperaxes-chat --model llama3.1   # Default, recommended
+pcd-hyperaxes-chat --model mistral    # Faster
+pcd-hyperaxes-chat --model qwen2.5    # Great for technical tasks
+```
+
+### Option C: Command Line Interface
 
 For automation and scripting, use the CLI directly.
 
@@ -213,11 +270,24 @@ pip install -e .
 pcd-hyperaxes source.ply target.ply --no-plot -o results.json
 ```
 
+**Chat interface not connecting to Ollama?**
+```bash
+# Make sure Ollama is running
+ollama serve
+
+# In another terminal, check if model is installed
+ollama list
+
+# Pull model if needed
+ollama pull llama3.1
+```
+
 ## Next Steps
 
-1. Try the TUI: `pcd-hyperaxes-tui`
-2. Experiment with your own point cloud files
-3. Read the full [README.md](README.md) for advanced features
-4. Explore the Python API for custom workflows
+1. Try the LLM Chat: `pcd-hyperaxes-chat` (requires Ollama)
+2. Try the TUI: `pcd-hyperaxes-tui`
+3. Experiment with your own point cloud files
+4. Read the full [README.md](README.md) for advanced features
+5. Explore the Python API for custom workflows
 
-Happy analyzing!
+Happy analyzing! 🚀

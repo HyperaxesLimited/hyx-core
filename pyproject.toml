@@ -36,11 +36,13 @@ dependencies = [
     "open3d>=0.17.0",
     "laspy>=2.3.0",
     "textual>=0.47.0",
+    "ollama",
 ]
 
 [project.scripts]
 pcd-hyperaxes = "pcd_hyperaxes_core.cli:main"
 pcd-hyperaxes-tui = "pcd_hyperaxes_core.tui:main"
+pcd-hyperaxes-chat = "pcd_hyperaxes_core.llm.chat:main"
 
 [project.optional-dependencies]
 dev = [
