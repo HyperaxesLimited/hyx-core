@@ -22,6 +22,7 @@ from pcd_hyperaxes_core import (
 from pcd_hyperaxes_core.config import (
     PreprocessingConfig,
     AnalysisConfig,
+    NoiseFilterConfig,
     OutputConfig,
 )
 from pcd_hyperaxes_core.output.models import AnalysisResults, ClusterInfo
@@ -154,19 +155,33 @@ class HyperAxesFunctionExecutor:
         if "region_size" in arguments:
             config.region_size_threshold = arguments["region_size"]
 
+        # Update noise filtering parameters
+        if any(key in arguments for key in ["enable_noise_filtering", "noise_sigma", "min_local_support"]):
+            if "enable_noise_filtering" in arguments:
+                config.noise_filter.enable_statistical_filter = arguments["enable_noise_filtering"]
+                config.noise_filter.enable_local_validation = arguments["enable_noise_filtering"]
+            if "noise_sigma" in arguments:
+                config.noise_filter.noise_tolerance_sigma = arguments["noise_sigma"]
+            if "min_local_support" in arguments:
+                config.noise_filter.min_local_support = arguments["min_local_support"]
+
         self.state.analysis_config = config
         logger.info(
             f"Analysis configured: distance_threshold={config.distance_threshold}, "
-            f"region_threshold={config.region_distance_threshold}, region_size={config.region_size_threshold}"
+            f"region_threshold={config.region_distance_threshold}, region_size={config.region_size_threshold}, "
+            f"noise_filtering={config.noise_filter.enable_statistical_filter}"
         )
 
         return {
             "success": True,
-            "message": f"Analysis configured: distance threshold={config.distance_threshold}m, region threshold={config.region_distance_threshold}m, min region size={config.region_size_threshold} points",
+            "message": f"Analysis configured: distance threshold={config.distance_threshold}m, region threshold={config.region_distance_threshold}m, min region size={config.region_size_threshold} points, noise filtering={'enabled' if config.noise_filter.enable_statistical_filter else 'disabled'}",
             "data": {
                 "distance_threshold": config.distance_threshold,
                 "region_threshold": config.region_distance_threshold,
                 "region_size": config.region_size_threshold,
+                "noise_filtering_enabled": config.noise_filter.enable_statistical_filter,
+                "noise_sigma": config.noise_filter.noise_tolerance_sigma,
+                "min_local_support": config.noise_filter.min_local_support,
             },
         }
 
@@ -243,7 +258,8 @@ class HyperAxesFunctionExecutor:
             # 5. Analyze changes
             print("   🔍 Analyzing changes...", flush=True)
             logger.info("Analyzing changes...")
-            change_indices, change_stats = analyze_changes(distances, analysis_config)
+            all_points = np.asarray(source_aligned.points)
+            change_indices, change_stats = analyze_changes(distances, analysis_config, all_points)
 
             # 6. Detect regions
             print("   🎯 Clustering change regions...", flush=True)
@@ -255,7 +271,6 @@ class HyperAxesFunctionExecutor:
             # 7. Build results
             print("   📊 Building results...", flush=True)
             logger.info("Building results...")
-            all_points = np.asarray(source_aligned.points)
             clusters = [
                 ClusterInfo.from_indices(i, region, all_points, include_points=True) for i, region in enumerate(regions, 1)
             ]

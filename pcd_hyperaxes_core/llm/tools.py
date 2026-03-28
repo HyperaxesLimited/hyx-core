@@ -82,6 +82,18 @@ HYPERAXES_TOOLS = [
                         "type": "integer",
                         "description": "Minimum number of points required to form a region (default: 10)",
                     },
+                    "enable_noise_filtering": {
+                        "type": "boolean",
+                        "description": "Enable noise filtering to reduce false positives (default: true)",
+                    },
+                    "noise_sigma": {
+                        "type": "number",
+                        "description": "Statistical noise tolerance in sigma units (default: 2.0)",
+                    },
+                    "min_local_support": {
+                        "type": "integer",
+                        "description": "Minimum neighbors for local validation (default: 3)",
+                    },
                 },
             },
         },

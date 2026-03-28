@@ -92,6 +92,17 @@ class ConfigScreen(Screen):
                 yield Input(placeholder="0.2", id="distance_threshold", value="0.2")
                 yield Label("Region threshold:")
                 yield Input(placeholder="0.9", id="region_threshold", value="0.9")
+                yield Label("Noise filtering:")
+                yield Select(
+                    [("Enabled", "true"), ("Disabled", "false")],
+                    id="noise_filtering",
+                    value="true",
+                    allow_blank=False,
+                )
+                yield Label("Noise sigma:")
+                yield Input(placeholder="2.0", id="noise_sigma", value="2.0")
+                yield Label("Min local support:")
+                yield Input(placeholder="3", id="min_local_support", value="3")
 
             # Output
             with Vertical(classes="box"):
@@ -145,6 +156,9 @@ class ConfigScreen(Screen):
             voxel_size = float(self.query_one("#voxel_size", Input).value or "0.1")
             distance_threshold = float(self.query_one("#distance_threshold", Input).value or "0.2")
             region_threshold = float(self.query_one("#region_threshold", Input).value or "0.9")
+            noise_filtering = self.query_one("#noise_filtering", Select).value == "true"
+            noise_sigma = float(self.query_one("#noise_sigma", Input).value or "2.0")
+            min_local_support = int(self.query_one("#min_local_support", Input).value or "3")
             output_format = self.query_one("#output_format", Select).value
             output_file = self.query_one("#output_file", Input).value.strip()
         except ValueError as e:
@@ -158,6 +172,9 @@ class ConfigScreen(Screen):
             voxel_size=voxel_size,
             distance_threshold=distance_threshold,
             region_threshold=region_threshold,
+            noise_filtering=noise_filtering,
+            noise_sigma=noise_sigma,
+            min_local_support=min_local_support,
             output_format=output_format,
             output_file=output_file if output_file else None,
         )
@@ -226,17 +243,26 @@ class ProgressScreen(Screen):
             status.update("[ 5/6 ] Computing distances...")
             progress.update(progress=70)
             await asyncio.sleep(0.1)
-            distances = compute_cloud_distances(source_aligned, target)
-            _, change_stats = analyze_changes(distances, self.params["distance_threshold"])
+            from pcd_hyperaxes_core.config import NoiseFilterConfig
+            noise_filter = NoiseFilterConfig(
+                enable_statistical_filter=self.params["noise_filtering"],
+                enable_local_validation=self.params["noise_filtering"],
+                noise_tolerance_sigma=self.params["noise_sigma"],
+                min_local_support=self.params["min_local_support"],
+            )
+            analysis_config = AnalysisConfig(
+                distance_threshold=self.params["distance_threshold"],
+                region_distance_threshold=self.params["region_threshold"],
+                noise_filter=noise_filter,
+            )
+            distances = compute_cloud_distances(source_aligned, target, analysis_config)
+            source_points = np.asarray(source_aligned.points)
+            _, change_stats = analyze_changes(distances, analysis_config, source_points)
 
             # Detect regions
             status.update("[ 6/6 ] Detecting change regions...")
             progress.update(progress=85)
             await asyncio.sleep(0.1)
-            analysis_config = AnalysisConfig(
-                distance_threshold=self.params["distance_threshold"],
-                region_distance_threshold=self.params["region_threshold"],
-            )
             regions, missing_indices, region_labels = detect_missing_regions(
                 source_aligned, target, distances, analysis_config
             )

@@ -24,6 +24,7 @@ from pcd_hyperaxes_core.config import (
     PreprocessingConfig,
     RegistrationConfig,
     AnalysisConfig,
+    NoiseFilterConfig,
     VisualizationConfig,
     OutputConfig,
     LoggingConfig,
@@ -75,6 +76,9 @@ Examples:
   # Verbose output with CSV export
   pcd-hyperaxes source.ply target.ply -v --format csv -o results.csv
 
+  # Generate full report without point arrays (smaller file)
+  pcd-hyperaxes source.ply target.ply --no-points -o results.json
+
   # Export to GeoJSON for GIS applications
   pcd-hyperaxes source.ply target.ply --format geojson -o differences.geojson
         """,
@@ -122,6 +126,25 @@ Examples:
     analysis_group.add_argument(
         "--region-size", type=int, default=10, metavar="N", help="Minimum region size in points (default: 10)"
     )
+    analysis_group.add_argument(
+        "--no-noise-filtering",
+        action="store_true",
+        help="Disable noise filtering (use raw threshold only)",
+    )
+    analysis_group.add_argument(
+        "--noise-sigma",
+        type=float,
+        default=2.0,
+        metavar="SIGMA",
+        help="Statistical noise tolerance in sigma units (default: 2.0)",
+    )
+    analysis_group.add_argument(
+        "--min-local-support",
+        type=int,
+        default=3,
+        metavar="N",
+        help="Minimum neighbors for local validation (default: 3)",
+    )
 
     # Output options
     output_group = parser.add_argument_group("Output Options")
@@ -135,6 +158,9 @@ Examples:
         "--format", choices=["json", "text", "csv", "geojson"], default="json", help="Output format (default: json)"
     )
     output_group.add_argument("-o", "--output", type=Path, metavar="FILE", help="Save results to file")
+    output_group.add_argument(
+        "--no-points", action="store_true", help="Exclude point arrays from output (reduces file size)"
+    )
 
     # Visualization options
     viz_group = parser.add_argument_group("Visualization Options")
@@ -163,10 +189,17 @@ def build_config_from_args(args: argparse.Namespace) -> PipelineConfig:
     config.skip_registration = args.skip_registration
 
     # Analysis
+    noise_filter = NoiseFilterConfig(
+        enable_statistical_filter=not args.no_noise_filtering,
+        enable_local_validation=not args.no_noise_filtering,
+        noise_tolerance_sigma=args.noise_sigma,
+        min_local_support=args.min_local_support,
+    )
     config.analysis = AnalysisConfig(
         distance_threshold=args.distance_threshold,
         region_distance_threshold=args.region_threshold,
         region_size_threshold=args.region_size,
+        noise_filter=noise_filter,
     )
 
     # Visualization
@@ -174,7 +207,9 @@ def build_config_from_args(args: argparse.Namespace) -> PipelineConfig:
 
     # Output
     mode_map = {"centroid": "centroid_only", "summary": "summary", "full": "full"}
-    config.output = OutputConfig(mode=mode_map[args.mode], format=args.format, output_file=args.output)
+    config.output = OutputConfig(
+        mode=mode_map[args.mode], format=args.format, output_file=args.output, include_points=not args.no_points
+    )
 
     # Logging
     config.logging = LoggingConfig(verbose=args.verbose, log_level=args.log_level)
@@ -239,7 +274,8 @@ def run_analysis(config: PipelineConfig, source_path: Path, target_path: Path) -
 
     # Analyze changes
     logger.info("Analyzing changes...")
-    change_indices, change_stats = analyze_changes(distances, config.analysis)
+    source_points = np.asarray(source.points)
+    change_indices, change_stats = analyze_changes(distances, config.analysis, source_points)
 
     # Detect regions
     logger.info("Detecting regions...")
@@ -247,7 +283,7 @@ def run_analysis(config: PipelineConfig, source_path: Path, target_path: Path) -
 
     # Build cluster info
     all_points = np.asarray(source.points)
-    include_points = config.output.mode == "full"
+    include_points = config.output.include_points
 
     clusters = [ClusterInfo.from_indices(i, region, all_points, include_points) for i, region in enumerate(regions, 1)]
 

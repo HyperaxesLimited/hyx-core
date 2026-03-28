@@ -39,6 +39,21 @@ class RegistrationConfig:
 
 
 @dataclass
+class NoiseFilterConfig:
+    """Configuration for noise filtering in change detection."""
+
+    # Statistical filtering
+    enable_statistical_filter: bool = True
+    noise_tolerance_sigma: float = 2.0
+    use_mad: bool = True  # Use MAD (Median Absolute Deviation) instead of std
+
+    # Local density validation
+    enable_local_validation: bool = True
+    min_local_support: int = 3
+    local_search_neighbors: int = 20
+
+
+@dataclass
 class AnalysisConfig:
     """Configuration for change detection analysis."""
 
@@ -46,6 +61,7 @@ class AnalysisConfig:
     region_distance_threshold: float = 0.9
     region_size_threshold: int = 10
     cluster_neighbors: int = 20
+    noise_filter: NoiseFilterConfig = field(default_factory=NoiseFilterConfig)
 
 
 @dataclass
@@ -69,6 +85,7 @@ class OutputConfig:
     output_file: Optional[Path] = None
     save_visualization: bool = False
     visualization_output: Optional[Path] = None
+    include_points: bool = True  # Control point array inclusion in output
 
 
 @dataclass
