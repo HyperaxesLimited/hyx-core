@@ -18,21 +18,16 @@ from pcd_hyperaxes_core.llm.tools import HYPERAXES_TOOLS
 logger = logging.getLogger(__name__)
 
 
-SYSTEM_PROMPT_TEMPLATE = """You are HyperAxes Assistant, an expert in point cloud analysis.
-You help users analyze and compare 3D point cloud data from LAS, LAZ, PLY, PCD, and XYZ files.
+SYSTEM_PROMPT_TEMPLATE = """You are HyperAxes Assistant for point cloud analysis (LAS/LAZ/PLY/PCD/XYZ).
 
-Your approach is STEP-BY-STEP and GUIDED:
-1. First, ask the user for source and target file paths
-2. Then, explain default parameters or ask if they want to customize them
-3. Confirm the configuration before running the analysis
-4. Present results clearly with statistics and summaries
-5. Offer to save results or create visualizations
+Guide users step-by-step. Be BRIEF and DIRECT - use 1-2 sentences max per response:
+1. Ask for source/target paths
+2. Confirm parameters
+3. Present results (numbers only)
+4. Offer save/visualize
 
-Always use your available functions to interact with the HyperAxes system.
-Be conversational, helpful, and explain technical concepts in simple terms.
-When file paths are provided, always use absolute paths.
-
-Current state: {state_summary}"""
+CRITICAL: Keep responses SHORT. No explanations unless asked.
+State: {state_summary}"""
 
 
 WELCOME_BANNER = """
@@ -42,13 +37,40 @@ WELCOME_BANNER = """
 
 Welcome to the HyperAxes conversational interface!
 
-Type your requests in natural language to analyze point clouds.
+✨ Features: Streaming responses • Real-time progress • Step-by-step guidance
+
 Commands:
   - Type 'quit', 'exit', or 'bye' to end the conversation
   - Type 'status' to see current configuration
+  - Type 'help' to see what I can do
 
 Let's get started! 🚀
 """
+
+
+CAPABILITIES_RESPONSE = """I can help you analyze and compare 3D point clouds. Here's what I can do:
+
+📂 **File Management**
+   • Load point clouds (LAS, LAZ, PLY, PCD, XYZ formats)
+   • Set source and target files for comparison
+
+⚙️ **Configuration**
+   • Configure preprocessing (voxel size, outlier removal)
+   • Configure analysis parameters (distance/region thresholds)
+   • Configure output format (JSON, CSV, GeoJSON, text)
+
+🔍 **Analysis**
+   • Register and align point clouds using ICP
+   • Detect differences and changes between scans
+   • Cluster change regions
+   • Compute detailed statistics
+
+📊 **Output & Visualization**
+   • Save results in multiple formats
+   • Generate 3D web visualization with three.js
+   • Export GeoJSON for GIS applications
+
+Just tell me what you want to do in natural language!"""
 
 
 class HyperAxesChat:
@@ -101,9 +123,28 @@ class HyperAxesChat:
                     print(f"\n📊 Current state: {self.state.get_summary()}\n")
                     continue
 
-                # Process message
-                response = self._chat(user_input)
-                print(f"\n🤖 Assistant: {response}")
+                # Check for help/capabilities request (predefined response to save latency)
+                user_lower = user_input.lower()
+                if any(
+                    keyword in user_lower
+                    for keyword in [
+                        "help",
+                        "what can you do",
+                        "what do you do",
+                        "capabilities",
+                        "features",
+                        "how can you help",
+                        "what are you",
+                        "cosa sai fare",
+                        "cosa puoi fare",
+                        "aiuto",
+                    ]
+                ):
+                    print(f"\n{CAPABILITIES_RESPONSE}\n")
+                    continue
+
+                # Process message (prints streaming response)
+                self._chat(user_input)
 
             except KeyboardInterrupt:
                 print("\n\n⚠️  Interrupted. Type 'quit' to exit cleanly.")
@@ -123,6 +164,7 @@ class HyperAxesChat:
             Assistant's response
         """
         import ollama
+        import sys
 
         # Add user message to history
         self.state.conversation_history.append({"role": "user", "content": user_message})
@@ -131,9 +173,15 @@ class HyperAxesChat:
         messages = self._build_messages()
 
         try:
-            # First call to Ollama
+            # Show thinking indicator
+            print("\n🤔 Thinking...", end="", flush=True)
+
+            # First call to Ollama (non-streaming to detect tool calls)
             self.logger.debug(f"Calling Ollama with {len(messages)} messages")
             response = ollama.chat(model=self.model, messages=messages, tools=HYPERAXES_TOOLS)
+
+            # Clear thinking indicator
+            print("\r" + " " * 20 + "\r", end="", flush=True)
 
             # Check if there are tool calls
             if response.get("message", {}).get("tool_calls"):
@@ -142,10 +190,13 @@ class HyperAxesChat:
                 # Add assistant message with tool calls to history
                 self.state.conversation_history.append(response["message"])
 
-                # Execute each tool
-                for tool_call in response["message"]["tool_calls"]:
+                # Execute each tool with progress indicator
+                for i, tool_call in enumerate(response["message"]["tool_calls"], 1):
                     function_name = tool_call["function"]["name"]
                     arguments = tool_call["function"]["arguments"]
+
+                    # Show function execution indicator
+                    print(f"⚙️  Executing: {function_name}...", flush=True)
 
                     self.logger.info(f"Executing: {function_name}({arguments})")
                     result = self.executor.execute_function(function_name, arguments)
@@ -153,14 +204,31 @@ class HyperAxesChat:
                     # Add tool result to history
                     self.state.conversation_history.append({"role": "tool", "content": json.dumps(result)})
 
-                # Second call to Ollama to get final response
+                # Second call to Ollama with streaming
+                print("\n🤖 Assistant: ", end="", flush=True)
                 messages = self._build_messages()
-                final_response = ollama.chat(model=self.model, messages=messages)
-                assistant_message = final_response["message"]["content"]
+
+                assistant_message = ""
+                for chunk in ollama.chat(model=self.model, messages=messages, stream=True):
+                    content = chunk["message"]["content"]
+                    print(content, end="", flush=True)
+                    assistant_message += content
+
+                print()  # New line after streaming
 
             else:
-                # No tool calls, direct response
-                assistant_message = response["message"]["content"]
+                # No tool calls, direct response with streaming
+                print("\n🤖 Assistant: ", end="", flush=True)
+
+                assistant_message = ""
+                for chunk in ollama.chat(
+                    model=self.model, messages=messages, tools=HYPERAXES_TOOLS, stream=True
+                ):
+                    content = chunk["message"]["content"]
+                    print(content, end="", flush=True)
+                    assistant_message += content
+
+                print()  # New line after streaming
 
             # Save assistant response to history
             self.state.conversation_history.append({"role": "assistant", "content": assistant_message})
@@ -194,9 +262,12 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  pcd-hyperaxes-chat
-  pcd-hyperaxes-chat --model mistral
-  pcd-hyperaxes-chat --model qwen2.5
+  pcd-hyperaxes-chat                      # Use default llama3.1
+  pcd-hyperaxes-chat --model llama3.2:3b  # Faster, smaller model
+  pcd-hyperaxes-chat --model qwen2.5:3b   # Technical tasks
+
+Note: Model MUST support function calling (tools).
+      Models like phi3:mini do NOT work.
 
 For more information, visit: https://github.com/hyperaxes/pcd-hyperaxes
         """,
@@ -205,7 +276,7 @@ For more information, visit: https://github.com/hyperaxes/pcd-hyperaxes
     parser.add_argument(
         "--model",
         default="llama3.1",
-        help="Ollama model to use (default: llama3.1)",
+        help="Ollama model to use - MUST support function calling (default: llama3.1). Fast options: llama3.2:3b, qwen2.5:3b",
     )
 
     parser.add_argument(

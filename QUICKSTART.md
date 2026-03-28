@@ -104,10 +104,27 @@ pcd-hyperaxes-chat
 
 **Available Models:**
 ```bash
-pcd-hyperaxes-chat --model llama3.1   # Default, recommended
-pcd-hyperaxes-chat --model mistral    # Faster
-pcd-hyperaxes-chat --model qwen2.5    # Great for technical tasks
+# Default - balanced quality and speed
+pcd-hyperaxes-chat --model llama3.1
+
+# Faster models (2-3x faster responses, MUST support function calling)
+pcd-hyperaxes-chat --model llama3.2:3b   # Recommended for speed
+pcd-hyperaxes-chat --model qwen2.5:3b    # Great for technical tasks
+pcd-hyperaxes-chat --model mistral       # Fast and capable
+
+# Download model first with: ollama pull llama3.2:3b
 ```
+
+**Performance Tips:**
+- ⚠️ **IMPORTANT**: Only use models that support function calling (tools)
+- Smaller models (llama3.2:3b, qwen2.5:3b) = 2-3x faster
+- Streaming output shows text as it's generated (no waiting!)
+- Progress indicators show each analysis step in real-time
+
+**Models that DON'T work:**
+- ❌ phi3, phi3:mini (no function calling support)
+- ❌ llama2 (outdated, no tools)
+- ❌ codellama (not optimized for conversation)
 
 ### Option C: Command Line Interface
 

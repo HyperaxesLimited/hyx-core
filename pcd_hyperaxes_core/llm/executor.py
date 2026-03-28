@@ -212,6 +212,7 @@ class HyperAxesFunctionExecutor:
             logger.info("Starting analysis pipeline...")
 
             # 1. Load point clouds
+            print("   📂 Loading point clouds...", flush=True)
             logger.info("Loading point clouds...")
             source_orig = load_point_cloud(self.state.source_file)
             target_orig = load_point_cloud(self.state.target_file)
@@ -220,6 +221,7 @@ class HyperAxesFunctionExecutor:
             orig_target_points = len(target_orig.points)
 
             # 2. Preprocess
+            print("   🔧 Preprocessing point clouds...", flush=True)
             logger.info("Preprocessing point clouds...")
             source = preprocess_point_cloud(source_orig, prep_config)
             target = preprocess_point_cloud(target_orig, prep_config)
@@ -228,25 +230,30 @@ class HyperAxesFunctionExecutor:
             prep_target_points = len(target.points)
 
             # 3. Register
+            print("   🔄 Registering with ICP (this may take a moment)...", flush=True)
             logger.info("Registering point clouds with ICP...")
             source_aligned, transform = register_point_clouds(source, target, prep_config.voxel_size, reg_config)
             self.state.source_aligned = source_aligned
 
             # 4. Compute distances
+            print("   📏 Computing distances...", flush=True)
             logger.info("Computing point-to-point distances...")
             distances = compute_cloud_distances(source_aligned, target, analysis_config)
 
             # 5. Analyze changes
+            print("   🔍 Analyzing changes...", flush=True)
             logger.info("Analyzing changes...")
             change_indices, change_stats = analyze_changes(distances, analysis_config)
 
             # 6. Detect regions
+            print("   🎯 Clustering change regions...", flush=True)
             logger.info("Detecting change regions...")
             regions, missing_indices, region_labels = detect_missing_regions(
                 source_aligned, target, distances, analysis_config
             )
 
             # 7. Build results
+            print("   📊 Building results...", flush=True)
             logger.info("Building results...")
             all_points = np.asarray(source_aligned.points)
             clusters = [
@@ -277,6 +284,7 @@ class HyperAxesFunctionExecutor:
 
             self.state.last_results = results
 
+            print(f"   ✅ Analysis complete! Found {len(regions)} change regions", flush=True)
             logger.info(f"Analysis complete. Found {len(regions)} regions of differences.")
 
             # 8. Visualize if requested
@@ -284,8 +292,10 @@ class HyperAxesFunctionExecutor:
                 try:
                     from pcd_hyperaxes_core.llm.webviewer import create_web_visualization
 
+                    print("   🌐 Creating 3D web visualization...", flush=True)
                     logger.info("Creating web visualization...")
                     viz_path = create_web_visualization(results, source_aligned, auto_open=True)
+                    print("   ✅ Visualization opened in browser", flush=True)
                     logger.info(f"Visualization opened at: {viz_path}")
                 except Exception as viz_error:
                     logger.warning(f"Visualization failed: {viz_error}")
