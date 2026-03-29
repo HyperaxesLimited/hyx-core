@@ -1,0 +1,14 @@
+TILE EXTRACTION METADATA
+============================================================
+
+Source files:
+  File 1: 2026-03-02-mbes-genova-0.25m_GB.xyz
+  File 2: 2026-03-12-mbes-genova-0.25m_GB.xyz
+
+Tile bounds:
+  X: [1494789.2550, 1494839.2550]
+  Y: [4915510.3800, 4915560.3800]
+
+Output files:
+  Tile 1: tile_2026-03-02.xyz (35327 points)
+  Tile 2: tile_2026-03-12.xyz (33438 points)

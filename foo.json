@@ -1,0 +1,20 @@
+INFO - pcd_hyperaxes_core v1.0.0
+INFO - Author: Nicola Sabino | Company: Hyperaxes
+INFO - Loading point clouds...
+INFO - Loaded 681759 points from 2026-03-02-mbes-genova-0.25m_GB.xyz
+INFO - Loaded 91762 points from 2026-03-12-mbes-genova-0.25m_GB.xyz
+INFO - Preprocessing point clouds...
+INFO - Starting preprocessing of 681759 points
+INFO - Preprocessing complete: 655352 points remaining
+INFO - Starting preprocessing of 91762 points
+INFO - Preprocessing complete: 87889 points remaining
+INFO - Computing distances...
+INFO - Computing point-to-point distances
+INFO - Computed distances for 655352 points
+INFO - Analyzing changes...
+INFO - Analyzing changes with threshold 0.2
+INFO - Initial candidates: 599636 points
+INFO - Statistical filter removed 566128 points (94.4%)
+INFO - Final: 33508 changed points (5.11%) - filtered 566128 noise points (94.4%)
+INFO - Detecting regions...
+INFO - Detecting regions with threshold 0.9

@@ -1,0 +1,65 @@
+{
+  "file1": "tile_2026-03-02.xyz",
+  "file2": "tile_2026-03-12.xyz",
+  "total_area_file1_m2": 2487.5,
+  "total_area_file2_m2": 2487.5,
+  "bounds_file1": {
+    "x_min": 1494789.38,
+    "x_max": 1494839.13,
+    "y_min": 4915510.38,
+    "y_max": 4915560.38,
+    "width": 49.75,
+    "height": 50.0
+  },
+  "bounds_file2": {
+    "x_min": 1494789.38,
+    "x_max": 1494839.13,
+    "y_min": 4915510.38,
+    "y_max": 4915560.38,
+    "width": 49.75,
+    "height": 50.0
+  },
+  "overlap_area_m2": 2487.5,
+  "overlap_percentage_file1": 100.0,
+  "overlap_percentage_file2": 100.0,
+  "overlap_bounds": {
+    "x_min": 1494789.38,
+    "x_max": 1494839.13,
+    "y_min": 4915510.38,
+    "y_max": 4915560.38,
+    "width": 49.75,
+    "height": 50.0,
+    "points_file1": 35327,
+    "points_file2": 33438
+  },
+  "distance_statistics": {
+    "min": 0.0,
+    "max": 6.9652279216117545,
+    "mean": 0.4162027439015348,
+    "median": 0.120000000000001,
+    "std": 0.7596063032034046
+  },
+  "num_difference_regions": 2,
+  "difference_regions": [
+    {
+      "cluster_id": 1,
+      "num_points": 3570,
+      "centroid": [
+        1494811.9996079335,
+        4915517.589313385,
+        -16.353084033613488
+      ]
+    },
+    {
+      "cluster_id": 2,
+      "num_points": 1516,
+      "centroid": [
+        1494827.4980739367,
+        4915545.968060783,
+        -12.965850923482884
+      ]
+    }
+  ],
+  "estimated_difference_area_m2": 317.875,
+  "difference_percentage_of_overlap": 12.77889447236181
+}
