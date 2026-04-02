@@ -27,13 +27,13 @@ from typing import Optional
 import asyncio
 import json
 
-from pcd_hyperaxes_core.core.io import load_point_cloud
-from pcd_hyperaxes_core.core.preprocessing import preprocess_point_cloud
-from pcd_hyperaxes_core.core.registration import register_point_clouds
-from pcd_hyperaxes_core.core.analysis import compute_cloud_distances, analyze_changes
-from pcd_hyperaxes_core.core.clustering import detect_missing_regions
-from pcd_hyperaxes_core.output.models import AnalysisResults, ClusterInfo
-from pcd_hyperaxes_core.config import (
+from pcd_hyperaxes.core.io import load_point_cloud
+from pcd_hyperaxes.core.preprocessing import preprocess_point_cloud
+from pcd_hyperaxes.core.registration import register_point_clouds
+from pcd_hyperaxes.core.analysis import compute_cloud_distances, analyze_changes
+from pcd_hyperaxes.core.clustering import detect_missing_regions
+from pcd_hyperaxes.output.models import AnalysisResults, ClusterInfo
+from pcd_hyperaxes.config import (
     PreprocessingConfig,
     AnalysisConfig,
 )
@@ -243,7 +243,7 @@ class ProgressScreen(Screen):
             status.update("[ 5/6 ] Computing distances...")
             progress.update(progress=70)
             await asyncio.sleep(0.1)
-            from pcd_hyperaxes_core.config import NoiseFilterConfig
+            from pcd_hyperaxes.config import NoiseFilterConfig
             noise_filter = NoiseFilterConfig(
                 enable_statistical_filter=self.params["noise_filtering"],
                 enable_local_validation=self.params["noise_filtering"],
@@ -399,8 +399,8 @@ class ResultsScreen(Screen):
 
     def action_save_results(self) -> None:
         """Save results to file."""
-        from pcd_hyperaxes_core.output.formatters import ResultFormatter
-        from pcd_hyperaxes_core.config import OutputConfig
+        from pcd_hyperaxes.output.formatters import ResultFormatter
+        from pcd_hyperaxes.config import OutputConfig
 
         if not self.output_file:
             self.output_file = f"results.{self.output_format}"

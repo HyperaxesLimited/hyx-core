@@ -168,7 +168,7 @@ def save_point_cloud(pcd: o3d.geometry.PointCloud, file_path: Union[str, Path]) 
         file_path: Output file path (.ply, .pcd, or .xyz)
 
     Example:
-        >>> from pcd_hyperaxes_core import load_point_cloud, save_point_cloud
+        >>> from pcd_hyperaxes import load_point_cloud, save_point_cloud
         >>> pcd = load_point_cloud("input.xyz")
         >>> save_point_cloud(pcd, "output.ply")
     """

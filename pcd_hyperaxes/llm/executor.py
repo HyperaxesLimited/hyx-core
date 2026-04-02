@@ -11,7 +11,7 @@ import numpy as np
 from pathlib import Path
 from typing import Dict, Any
 
-from pcd_hyperaxes_core import (
+from pcd_hyperaxes import (
     load_point_cloud,
     preprocess_point_cloud,
     register_point_clouds,
@@ -19,15 +19,15 @@ from pcd_hyperaxes_core import (
     analyze_changes,
     detect_missing_regions,
 )
-from pcd_hyperaxes_core.config import (
+from pcd_hyperaxes.config import (
     PreprocessingConfig,
     AnalysisConfig,
     NoiseFilterConfig,
     OutputConfig,
 )
-from pcd_hyperaxes_core.output.models import AnalysisResults, ClusterInfo
-from pcd_hyperaxes_core.output.formatters import ResultFormatter
-from pcd_hyperaxes_core.llm.state import ConversationState
+from pcd_hyperaxes.output.models import AnalysisResults, ClusterInfo
+from pcd_hyperaxes.output.formatters import ResultFormatter
+from pcd_hyperaxes.llm.state import ConversationState
 
 logger = logging.getLogger(__name__)
 
@@ -305,7 +305,7 @@ class HyperAxesFunctionExecutor:
             # 8. Visualize if requested
             if show_visualization:
                 try:
-                    from pcd_hyperaxes_core.llm.webviewer import create_web_visualization
+                    from pcd_hyperaxes.llm.webviewer import create_web_visualization
 
                     print("   🌐 Creating 3D web visualization...", flush=True)
                     logger.info("Creating web visualization...")

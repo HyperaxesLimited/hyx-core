@@ -14,12 +14,12 @@ __company__ = "Hyperaxes"
 __license__ = "MIT"
 
 # Export main classes and functions for easy access
-from pcd_hyperaxes_core.core.io import load_point_cloud, save_point_cloud
-from pcd_hyperaxes_core.core.preprocessing import preprocess_point_cloud
-from pcd_hyperaxes_core.core.registration import register_point_clouds
-from pcd_hyperaxes_core.core.analysis import compute_cloud_distances, analyze_changes
-from pcd_hyperaxes_core.core.clustering import detect_missing_regions
-from pcd_hyperaxes_core.core.tiling import (
+from pcd_hyperaxes.core.io import load_point_cloud, save_point_cloud
+from pcd_hyperaxes.core.preprocessing import preprocess_point_cloud
+from pcd_hyperaxes.core.registration import register_point_clouds
+from pcd_hyperaxes.core.analysis import compute_cloud_distances, analyze_changes
+from pcd_hyperaxes.core.clustering import detect_missing_regions
+from pcd_hyperaxes.core.tiling import (
     Bounds,
     compute_bounds,
     find_overlap,
@@ -28,7 +28,7 @@ from pcd_hyperaxes_core.core.tiling import (
     extract_comparable_tiles,
     save_tile_metadata,
 )
-from pcd_hyperaxes_core.config import (
+from pcd_hyperaxes.config import (
     AnalysisConfig,
     PreprocessingConfig,
     RegistrationConfig,

@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pcd-hyperaxes"
+name = "pcd-hyperaxes-core"
 version = "1.0.0"
-description = "Point cloud analysis module for difference detection and comparison"
+description = "Core point cloud analysis library (minimal build for containers)"
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [
@@ -15,7 +15,7 @@ maintainers = [
     { name = "Nicola Sabino", email = "nicola.sabino@hyperaxes.com" }
 ]
 license = { text = "MIT" }
-keywords = ["point-cloud", "3d", "lidar", "comparison", "analysis", "open3d", "hyperaxes"]
+keywords = ["point-cloud", "3d", "lidar", "analysis", "open3d", "hyperaxes"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
@@ -27,29 +27,37 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: GIS",
-    "Topic :: Scientific/Engineering :: Visualization",
     "Private :: Do Not Upload"
 ]
+
+# Dipendenze minimali (NO ollama, NO textual)
 dependencies = [
     "numpy>=1.21.0",
     "scipy>=1.7.0",
     "matplotlib>=3.5.0",
     "open3d>=0.17.0",
     "laspy>=2.3.0",
-    "textual>=0.47.0",
-    "ollama",
 ]
 
+# Solo entry point CLI
 [project.scripts]
 pcd-hyperaxes = "pcd_hyperaxes.cli:main"
-pcd-hyperaxes-tui = "pcd_hyperaxes.tui:main"
-pcd-hyperaxes-chat = "pcd_hyperaxes.llm.chat:main"
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0.0",
     "mypy>=1.0.0",
     "ruff>=0.1.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pcd_hyperaxes*"]
+exclude = [
+    "tests*",
+    "docs*",
+    "pcd_hyperaxes.llm*",
+    "pcd_hyperaxes.visualization*",
 ]
 
 [tool.pyright]
@@ -69,13 +77,9 @@ venvPath = "."
 venv = ".venv"
 
 [tool.ruff]
-# Lunghezza massima delle linee
 line-length = 100
-
-# Python version target
 target-version = "py39"
 
-# File e directory da escludere
 exclude = [
     ".venv",
     "__pycache__",
@@ -84,7 +88,6 @@ exclude = [
 ]
 
 [tool.ruff.lint]
-# Regole da abilitare
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
@@ -95,18 +98,12 @@ select = [
     "B",   # flake8-bugbear
 ]
 
-# Regole da ignorare
 ignore = [
-    "E501",  # line too long (gestito da line-length)
+    "E501",  # line too long
 ]
 
 [tool.ruff.lint.isort]
 known-first-party = ["pcd_hyperaxes"]
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["pcd_hyperaxes*"]
-exclude = ["tests*", "docs*"]
 
 [tool.mypy]
 python_version = "3.9"

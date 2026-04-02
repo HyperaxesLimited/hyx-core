@@ -6,7 +6,7 @@ Company: Hyperaxes
 Date: 2025-12-07
 """
 
-from pcd_hyperaxes_core.cli import main
+from pcd_hyperaxes.cli import main
 import sys
 
 if __name__ == "__main__":

@@ -10,8 +10,8 @@ import json
 import csv
 from pathlib import Path
 import logging
-from pcd_hyperaxes_core.output.models import AnalysisResults
-from pcd_hyperaxes_core.config import OutputConfig
+from pcd_hyperaxes.output.models import AnalysisResults
+from pcd_hyperaxes.config import OutputConfig
 
 logger = logging.getLogger(__name__)
 

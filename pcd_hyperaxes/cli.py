@@ -19,7 +19,7 @@ __version__ = "1.0.0"
 __author__ = "Nicola Sabino"
 __company__ = "Hyperaxes"
 
-from pcd_hyperaxes_core.config import (
+from pcd_hyperaxes.config import (
     PipelineConfig,
     PreprocessingConfig,
     RegistrationConfig,
@@ -29,17 +29,26 @@ from pcd_hyperaxes_core.config import (
     OutputConfig,
     LoggingConfig,
 )
-from pcd_hyperaxes_core.core.io import load_point_cloud
-from pcd_hyperaxes_core.core.preprocessing import preprocess_point_cloud
-from pcd_hyperaxes_core.core.registration import register_point_clouds
-from pcd_hyperaxes_core.core.analysis import compute_cloud_distances, analyze_changes
-from pcd_hyperaxes_core.core.clustering import detect_missing_regions
-from pcd_hyperaxes_core.visualization.heatmap import create_distance_heatmap
-from pcd_hyperaxes_core.visualization.viewer import visualize_regions, show_visualization
-from pcd_hyperaxes_core.output.models import AnalysisResults, ClusterInfo
-from pcd_hyperaxes_core.output.formatters import ResultFormatter
-from pcd_hyperaxes_core.utils.logging import setup_logging
-from pcd_hyperaxes_core.utils.validation import (
+from pcd_hyperaxes.core.io import load_point_cloud
+from pcd_hyperaxes.core.preprocessing import preprocess_point_cloud
+from pcd_hyperaxes.core.registration import register_point_clouds
+from pcd_hyperaxes.core.analysis import compute_cloud_distances, analyze_changes
+from pcd_hyperaxes.core.clustering import detect_missing_regions
+
+# Import opzionali per visualization (potrebbero non essere disponibili nel core build)
+try:
+    from pcd_hyperaxes.visualization.heatmap import create_distance_heatmap
+    from pcd_hyperaxes.visualization.viewer import visualize_regions, show_visualization
+    VISUALIZATION_AVAILABLE = True
+except ImportError:
+    VISUALIZATION_AVAILABLE = False
+    import warnings
+    warnings.warn("Visualization module not available in core build", ImportWarning)
+
+from pcd_hyperaxes.output.models import AnalysisResults, ClusterInfo
+from pcd_hyperaxes.output.formatters import ResultFormatter
+from pcd_hyperaxes.utils.logging import setup_logging
+from pcd_hyperaxes.utils.validation import (
     validate_file_exists,
     validate_file_format,
     validate_positive_number,
@@ -303,11 +312,13 @@ def run_analysis(config: PipelineConfig, source_path: Path, target_path: Path) -
 
     # Visualization
     if config.visualization.enable_plots:
-        if config.visualization.show_heatmap:
+        if not VISUALIZATION_AVAILABLE:
+            logger.warning("Visualization requested but not available in core build")
+        elif config.visualization.show_heatmap:
             heatmap = create_distance_heatmap(source, distances, config.visualization)
             show_visualization([heatmap], config.visualization)
 
-        if len(missing_indices) > 0:
+        if VISUALIZATION_AVAILABLE and len(missing_indices) > 0:
             colored_pcd = visualize_regions(source, missing_indices, config.visualization)
             show_visualization([colored_pcd], config.visualization)
 

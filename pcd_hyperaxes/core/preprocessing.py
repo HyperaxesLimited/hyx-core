@@ -10,7 +10,7 @@ Date: 2025-12-07
 
 import open3d as o3d
 import logging
-from pcd_hyperaxes_core.config import PreprocessingConfig
+from pcd_hyperaxes.config import PreprocessingConfig
 
 logger = logging.getLogger(__name__)
 

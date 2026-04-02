@@ -10,7 +10,7 @@ import numpy as np
 import open3d as o3d
 import logging
 from typing import Tuple
-from pcd_hyperaxes_core.config import RegistrationConfig
+from pcd_hyperaxes.config import RegistrationConfig
 
 logger = logging.getLogger(__name__)
 

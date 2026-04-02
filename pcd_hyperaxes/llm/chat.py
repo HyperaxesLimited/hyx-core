@@ -11,9 +11,9 @@ import json
 import logging
 from typing import List, Dict
 
-from pcd_hyperaxes_core.llm.state import ConversationState
-from pcd_hyperaxes_core.llm.executor import HyperAxesFunctionExecutor
-from pcd_hyperaxes_core.llm.tools import HYPERAXES_TOOLS
+from pcd_hyperaxes.llm.state import ConversationState
+from pcd_hyperaxes.llm.executor import HyperAxesFunctionExecutor
+from pcd_hyperaxes.llm.tools import HYPERAXES_TOOLS
 
 logger = logging.getLogger(__name__)
 

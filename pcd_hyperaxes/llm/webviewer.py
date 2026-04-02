@@ -15,7 +15,7 @@ from typing import Tuple
 import numpy as np
 import open3d as o3d
 
-from pcd_hyperaxes_core.output.models import AnalysisResults
+from pcd_hyperaxes.output.models import AnalysisResults
 
 logger = logging.getLogger(__name__)
 

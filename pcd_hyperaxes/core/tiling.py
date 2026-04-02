@@ -99,7 +99,7 @@ def compute_bounds(
 
     Example:
         >>> import open3d as o3d
-        >>> from pcd_hyperaxes_core import load_point_cloud, compute_bounds
+        >>> from pcd_hyperaxes import load_point_cloud, compute_bounds
         >>> pcd = load_point_cloud("pointcloud.xyz")
         >>> bounds = compute_bounds(pcd)
         >>> print(f"X range: {bounds.x_range:.2f}m")
@@ -317,7 +317,7 @@ def extract_comparable_tiles(
         ValueError: If point clouds don't overlap or are empty
 
     Example:
-        >>> from pcd_hyperaxes_core import load_point_cloud, extract_comparable_tiles
+        >>> from pcd_hyperaxes import load_point_cloud, extract_comparable_tiles
         >>> pcd1 = load_point_cloud("scan_day1.xyz")
         >>> pcd2 = load_point_cloud("scan_day2.xyz")
         >>> tiles, tile_bounds, original_bounds = extract_comparable_tiles(

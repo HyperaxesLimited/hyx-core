@@ -12,5 +12,5 @@ Date: 2025-12-07
 from setuptools import setup, find_packages
 
 setup(
-    packages=find_packages(include=["pcd_hyperaxes_core", "pcd_hyperaxes_core.*"]),
+    packages=find_packages(include=["pcd_hyperaxes", "pcd_hyperaxes.*"]),
 )

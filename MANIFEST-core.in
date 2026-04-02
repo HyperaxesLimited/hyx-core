@@ -1,0 +1,8 @@
+global-exclude pcd_hyperaxes/llm/*
+global-exclude pcd_hyperaxes/visualization/*
+global-exclude pcd_hyperaxes/tui.py
+global-exclude pcd_hyperaxes/tui.tcss
+global-exclude pcd_hyperaxes/__pycache__/*
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *~

@@ -9,11 +9,11 @@ Company: Hyperaxes
 Date: 2025-12-07
 """
 
-from pcd_hyperaxes_core.llm.state import ConversationState
-from pcd_hyperaxes_core.llm.tools import HYPERAXES_TOOLS
-from pcd_hyperaxes_core.llm.executor import HyperAxesFunctionExecutor
-from pcd_hyperaxes_core.llm.chat import HyperAxesChat
-from pcd_hyperaxes_core.llm.webviewer import create_web_visualization
+from pcd_hyperaxes.llm.state import ConversationState
+from pcd_hyperaxes.llm.tools import HYPERAXES_TOOLS
+from pcd_hyperaxes.llm.executor import HyperAxesFunctionExecutor
+from pcd_hyperaxes.llm.chat import HyperAxesChat
+from pcd_hyperaxes.llm.webviewer import create_web_visualization
 
 __all__ = [
     "ConversationState",

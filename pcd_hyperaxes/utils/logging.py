@@ -9,7 +9,7 @@ Date: 2025-12-07
 import logging
 import sys
 from pathlib import Path
-from pcd_hyperaxes_core.config import LoggingConfig
+from pcd_hyperaxes.config import LoggingConfig
 
 
 def setup_logging(config: LoggingConfig = None) -> None:

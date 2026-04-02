@@ -11,14 +11,14 @@ from pathlib import Path
 from typing import Optional, List, Dict
 import open3d as o3d
 
-from pcd_hyperaxes_core.config import (
+from pcd_hyperaxes.config import (
     PreprocessingConfig,
     RegistrationConfig,
     AnalysisConfig,
     OutputConfig,
     PipelineConfig,
 )
-from pcd_hyperaxes_core.output.models import AnalysisResults
+from pcd_hyperaxes.output.models import AnalysisResults
 
 
 @dataclass

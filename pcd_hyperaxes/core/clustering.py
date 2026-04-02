@@ -11,7 +11,7 @@ from scipy.spatial import KDTree
 import open3d as o3d
 import logging
 from typing import List, Tuple
-from pcd_hyperaxes_core.config import AnalysisConfig
+from pcd_hyperaxes.config import AnalysisConfig
 
 logger = logging.getLogger(__name__)
 
